@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: ester-recipes
+  main:
+    # This is a batch/CLI pipeline, not a web server.
+    web-application-type: none
+    banner-mode: off
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      # Don't try to pull models at startup; we manage that with `ollama pull`.
+      init:
+        pull-model-strategy: never
+      chat:
+        options:
+          # qwen2.5vl:3b — fits fully in the RTX 4060's VRAM and is markedly faster than
+          # the 7b at translation, while still getting OCR + categories right.
+          model: qwen2.5vl:3b
+          # NOTE: structured-output `format` (a JSON schema) is set per request in
+          # RecipeExtractionService so decoding is constrained to our recipe structure.
+          # Zero temperature → faithful, deterministic transcription, not creative cooking.
+          temperature: 0.0
+          # Large context so long, multi-recipe clippings fit in one pass.
+          num-ctx: 8192
+
+ester:
+  input-dir: ./recipes
+  processed-dir: ./recipes/processed
+  json-dir: ./recipes/json
+  output-dir: ./output
+  pdf-name: ester-recipes.pdf
+  pdf-title: Receitas da Ester
+
+logging:
+  level:
+    root: WARN
+    com.ester.recipes: INFO
