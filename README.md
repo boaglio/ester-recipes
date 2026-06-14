@@ -1,5 +1,9 @@
 # ester-recipes
 
+<p align="center">
+  <img src="docs/cover.jpg" alt="Receitas da Ester — book cover" width="420">
+</p>
+
 A Spring Boot + Spring AI app that turns a pile of **scanned cooking-recipe clippings**
 (Italian and Brazilian Portuguese, often several recipes per image, frequently rotated)
 into a single, illustrated **PDF cookbook** — *"Receitas da Ester"* — fully in Brazilian
