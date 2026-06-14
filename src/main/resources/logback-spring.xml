@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Spring Boot's default conversion rules + CONSOLE_LOG_PATTERN / FILE_LOG_PATTERN. -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- Write logs alongside the PDF, in the configured output directory. -->
+    <springProperty scope="context" name="outputDir" source="ester.output-dir" defaultValue="./output"/>
+
+    <!-- Resolved once, at startup → one file per run: process-2026-06-05_11_30_45.log -->
+    <timestamp key="runTimestamp" datePattern="yyyy-MM-dd_HH_mm_ss"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- Logback creates the output directory if it does not exist. -->
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>${outputDir}/process-${runTimestamp}.log</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- Levels themselves stay in application.yml (logging.level.*). -->
+    <root level="WARN">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>
