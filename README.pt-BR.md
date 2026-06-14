@@ -85,7 +85,7 @@ execução grava um log com data/hora em `output/`.
 
 ## Executar
 
-Coloque seus escaneamentos em `recipes/pending/` (dois exemplos já vêm incluídos), depois:
+Coloque seus escaneamentos em `recipes/pending/`, depois:
 
 ```bash
 # Fase 1+2 — extrai + traduz e gera o PDF

@@ -83,7 +83,7 @@ log to `output/`.
 
 ## Run
 
-Put your scans in `recipes/pending/` (two samples are included), then:
+Put your scans in `recipes/pending/`, then:
 
 ```bash
 # Phase 1+2 — extract + translate, then build the PDF
