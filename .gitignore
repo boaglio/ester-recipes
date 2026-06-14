@@ -7,12 +7,6 @@ recipes/processed/
 recipes/images/
 recipes/dense-pending/
 
-# Input images live in recipes/pending/. Only two samples are tracked; the rest (a
-# personal recipe collection) are ignored.
-recipes/pending/*
-!recipes/pending/20251023_165554166.jpg
-!recipes/pending/20251023_172537230.jpg
-
 # ComfyUI models/outputs (large; downloaded locally)
 comfyui/
 
