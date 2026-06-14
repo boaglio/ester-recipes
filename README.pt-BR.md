@@ -1,5 +1,9 @@
 # ester-recipes
 
+<p align="center">
+  <img src="docs/cover.jpg" alt="Receitas da Ester — capa do livro" width="420">
+</p>
+
 Um aplicativo Spring Boot + Spring AI que transforma uma pilha de **recortes de receitas
 escaneados** (em italiano e português do Brasil, muitas vezes com várias receitas por
 imagem e frequentemente girados) em um único **livro de receitas em PDF** — *"Receitas da
