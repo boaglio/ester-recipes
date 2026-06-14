@@ -1,7 +1,8 @@
 target/
 output/
 
-# Generated at runtime
+# Recipe image folders (your input scans + everything the app generates)
+recipes/pending/
 recipes/json/
 recipes/processed/
 recipes/images/
