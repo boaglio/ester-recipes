@@ -1,0 +1,38 @@
+# Local, free image-generation backend for ester-recipes' optional "anime image" phase.
+#
+# Prerequisites (one-time):
+#   1. NVIDIA driver (you have it) + NVIDIA Container Toolkit so Docker can use the GPU:
+#        sudo apt-get install -y nvidia-container-toolkit
+#        sudo nvidia-ctk runtime configure --runtime=docker && sudo systemctl restart docker
+#   2. Drop a (free) anime checkpoint into ./comfyui/models/checkpoints/ — e.g. an SDXL anime
+#      model (Animagine XL 4.0 / Illustrious XL) or an SD 1.5 anime model — then set its file
+#      name as `ester.images.checkpoint` in application.yml.
+#
+# Run:   docker compose up -d        (ComfyUI API on http://localhost:8188)
+# Stop:  docker compose down
+#
+# NOTE: ComfyUI + your Ollama VLM won't both fit in 8 GB at once. Run this AFTER the
+# extraction batch finishes (image generation is a separate, opt-in pass).
+services:
+  comfyui:
+    image: ghcr.io/ai-dock/comfyui:latest
+    container_name: ester-comfyui
+    ports:
+      - "8188:8188"
+    environment:
+      # ai-dock serves ComfyUI directly on this port when WEB is disabled.
+      - COMFYUI_ARGS=--listen 0.0.0.0 --port 8188
+      - WEB_ENABLE_AUTH=false
+    volumes:
+      # Only the models need to live on the host. Generated images are fetched from ComfyUI
+      # over its /view API (see ComfyUiClient), so the output dir stays inside the container
+      # — avoids host/container UID permission clashes on the mounted output folder.
+      - ./comfyui/models:/opt/ComfyUI/models
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped

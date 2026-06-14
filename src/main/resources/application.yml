@@ -1,6 +1,10 @@
 spring:
   application:
     name: ester-recipes
+  threads:
+    # Run pipeline tasks on virtual threads (ideal for the blocking Ollama calls).
+    virtual:
+      enabled: true
   main:
     # This is a batch/CLI pipeline, not a web server.
     web-application-type: none
@@ -20,16 +24,55 @@ spring:
           # RecipeExtractionService so decoding is constrained to our recipe structure.
           # Zero temperature → faithful, deterministic transcription, not creative cooking.
           temperature: 0.0
-          # Large context so long, multi-recipe clippings fit in one pass.
+          # Keep the whole model + KV cache on the GPU (8 GB, shared with the desktop). At
+          # 8192 the 3B model fits fully on the GPU and runs fast (~75s/image). A bigger
+          # context spills to CPU when desktop apps use VRAM, which is ~8x slower. The cost:
+          # a few very dense multi-recipe pages overflow 8192 and fail (logged, left to retry).
+          # To capture those too, free GPU memory (close video/browser) and raise this.
           num-ctx: 8192
+          # Hard output cap so a runaway/looping page can't generate for tens of minutes; it
+          # truncates and fails fast instead. Far more than any real page of recipes needs.
+          num-predict: 8192
 
 ester:
-  input-dir: ./recipes
+  input-dir: ./recipes/pending
   processed-dir: ./recipes/processed
   json-dir: ./recipes/json
   output-dir: ./output
   pdf-name: ester-recipes.pdf
   pdf-title: Receitas da Ester
+  # How many images to process in parallel. Each is one concurrent Ollama request.
+  # NOTE: a single GPU running one model is usually compute-bound, so raising this only
+  # helps if the Ollama server also has OLLAMA_NUM_PARALLEL >= concurrency AND spare VRAM.
+  # On an 8 GB card with a 3B model it gives little/no gain — measure before bumping it.
+  # 1 = sequential (default, safest).
+  concurrency: 1
+
+  # Optional anime-image phase via a local ComfyUI server (docker-compose.yml). OFF by
+  # default — it's a separate pass so it never competes with extraction for the GPU.
+  # Enable with --ester.images.enabled=true AFTER the extraction batch and once ComfyUI is up.
+  images:
+    enabled: false
+    base-url: http://localhost:8188
+    # File name of the checkpoint you placed in comfyui/models/checkpoints/.
+    checkpoint: Counterfeit-V2.5_pruned.safetensors
+    steps: 25
+    # Small per-recipe images (agents.md). 512 is native for SD 1.5 anime models and fast
+    # for a 400+ image batch; bump to 768/1024 for an SDXL checkpoint.
+    width: 512
+    height: 512
+    dir: ./recipes/images
+    negative-prompt: "1girl, 1boy, person, people, human, character, woman, man, girl, boy, face, hands, portrait, lowres, blurry, text, watermark, signature, deformed, ugly"
+    timeout-seconds: 180
+
+  # Optional second routine: translate any recipe that still has non-Portuguese (e.g. Italian)
+  # text into Brazilian Portuguese, in place. OFF by default.
+  # Enable with --ester.translation.enabled=true (does no extraction; rewrites JSON + PDF).
+  translation:
+    enabled: false
+    # Translation runs as a separate phase with a stronger text model than the vision model.
+    # Extraction transcribes faithfully (original language); this model translates to PT-BR.
+    model: "gemma4:latest"
 
 logging:
   level:

@@ -1,6 +1,7 @@
 package com.ester.recipes.service;
 
 import com.ester.recipes.model.Recipe;
+import com.ester.recipes.model.StoredRecipe;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.slf4j.Logger;
@@ -38,9 +39,12 @@ public class RecipeJsonStore {
      * Writes a single recipe as {@code <category>-<title>.json} inside {@code jsonDir},
      * choosing a non-colliding name if that file already exists.
      *
+     * <p>Synchronized so that parallel image processing can't have two threads resolve the
+     * same free file name before either has written it.</p>
+     *
      * @return the path of the file written
      */
-    public Path write(Recipe recipe, Path jsonDir) {
+    public synchronized Path write(Recipe recipe, Path jsonDir) {
         try {
             Files.createDirectories(jsonDir);
             String baseName = slug(recipe.category()) + "-" + slug(recipe.title());
@@ -53,23 +57,35 @@ public class RecipeJsonStore {
         }
     }
 
+    /** Overwrites an existing recipe JSON file in place (used by the translation-fix phase). */
+    public void overwrite(Recipe recipe, Path jsonFile) {
+        try {
+            objectMapper.writeValue(jsonFile.toFile(), recipe);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to overwrite " + jsonFile, e);
+        }
+    }
+
     /**
-     * Reads every {@code *.json} file in {@code jsonDir} back into recipes.
+     * Reads every {@code *.json} file in {@code jsonDir} back into recipes, each paired with
+     * its file-name stem (used to link the matching {@code <stem>.png} image).
      *
      * @return all stored recipes (this run and previous runs); empty if the dir is missing
      */
-    public List<Recipe> readAll(Path jsonDir) {
+    public List<StoredRecipe> readAll(Path jsonDir) {
         if (!Files.isDirectory(jsonDir)) {
             return List.of();
         }
         try (Stream<Path> files = Files.list(jsonDir)) {
-            List<Recipe> recipes = new ArrayList<>();
+            List<StoredRecipe> recipes = new ArrayList<>();
             for (Path file : files
                     .filter(Files::isRegularFile)
                     .filter(p -> p.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".json"))
                     .sorted(Comparator.comparing(p -> p.getFileName().toString()))
                     .toList()) {
-                recipes.add(objectMapper.readValue(file.toFile(), Recipe.class));
+                Recipe recipe = objectMapper.readValue(file.toFile(), Recipe.class);
+                String stem = file.getFileName().toString().replaceFirst("(?i)\\.json$", "");
+                recipes.add(new StoredRecipe(recipe, stem));
             }
             return recipes;
         } catch (IOException e) {
