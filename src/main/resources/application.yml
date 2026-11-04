@@ -16,27 +16,27 @@ spring:
       init:
         pull-model-strategy: never
       chat:
-        options:
-          # qwen2.5vl:3b — fits fully in the RTX 4060's VRAM and is markedly faster than
-          # the 7b at translation, while still getting OCR + categories right.
-          model: qwen2.5vl:3b
-          # NOTE: structured-output `format` (a JSON schema) is set per request in
-          # RecipeExtractionService so decoding is constrained to our recipe structure.
-          # Zero temperature → faithful, deterministic transcription, not creative cooking.
-          temperature: 0.0
-          # Keep the whole model + KV cache on the GPU (8 GB, shared with the desktop). At
-          # 8192 the 3B model fits fully on the GPU and runs fast (~75s/image). A bigger
-          # context spills to CPU when desktop apps use VRAM, which is ~8x slower. The cost:
-          # a few very dense multi-recipe pages overflow 8192 and fail (logged, left to retry).
-          # To capture those too, free GPU memory (close video/browser) and raise this.
-          num-ctx: 8192
-          # Hard output cap so a runaway/looping page can't generate for tens of minutes; it
-          # truncates and fails fast instead. Far more than any real page of recipes needs.
-          num-predict: 8192
+        # qwen2.5vl:7b — partly on the CPU with an 8 GB card (19/29 layers), ~1 min/image.
+        # Don't use qwen3-vl:4b: it only "thinks" and never returns an answer.
+        model: qwen2.5vl:7b
+        # NOTE: structured-output `format` (a JSON schema) is set per request in
+        # RecipeExtractionService so decoding is constrained to our recipe structure.
+        # Zero temperature → faithful, deterministic transcription, not creative cooking.
+        temperature: 0.0
+        # Keep as much of the model + KV cache as possible on the GPU (8 GB, shared with the
+        # desktop). A bigger context spills more to CPU, which is much slower. Answers that fill
+        # it are the model repeating itself, which a bigger context doesn't cure: retries of that
+        # scan raise the repeat penalty instead (RecipeExtractionService).
+        num-ctx: 8192
+        # Hard output cap so a runaway/looping page can't generate for tens of minutes; it
+        # truncates and fails fast instead. Far more than any real page of recipes needs.
+        num-predict: 8192
 
 ester:
   input-dir: ./recipes/pending
   processed-dir: ./recipes/processed
+  # Scans the model found no recipe in, such as covers. Listed in the check report to look over.
+  no-recipe-dir: ./recipes/no-recipe
   json-dir: ./recipes/json
   output-dir: ./output
   pdf-name: ester-recipes.pdf
@@ -44,9 +44,23 @@ ester:
   # How many images to process in parallel. Each is one concurrent Ollama request.
   # NOTE: a single GPU running one model is usually compute-bound, so raising this only
   # helps if the Ollama server also has OLLAMA_NUM_PARALLEL >= concurrency AND spare VRAM.
-  # On an 8 GB card with a 3B model it gives little/no gain — measure before bumping it.
+  # On an 8 GB card it gives little/no gain — measure before bumping it.
   # 1 = sequential (default, safest).
   concurrency: 1
+  # Longest side, in pixels, of the image sent to the vision model (the scan on disk is not
+  # changed). Full-size 6-10 MP photos cost ~5400 of the 8192 context tokens and ~1.3 GB of
+  # GPU memory to encode; at 1600 they cost ~2400 tokens. Raise it if small print is misread.
+  # 0 = send the original.
+  max-image-side: 1600
+
+  # Optional check: reads every scan again with a second vision model and writes a report of
+  # the pages where the two readings disagree (output/check-report-*.md). It changes no recipe.
+  # About 30 s more per scan with gemma4. Enable with --ester.check.enabled=true.
+  check:
+    enabled: false
+    model: "gemma4:latest"
+    # One text file per scan and model, so a later run doesn't read the same scan again.
+    dir: ./recipes/check
 
   # Optional anime-image phase via a local ComfyUI server (docker-compose.yml). OFF by
   # default — it's a separate pass so it never competes with extraction for the GPU.

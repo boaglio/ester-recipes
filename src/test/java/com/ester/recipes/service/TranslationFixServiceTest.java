@@ -31,6 +31,14 @@ class TranslationFixServiceTest {
     }
 
     @Test
+    void wordsCommonInBrazilianRecipesAreNotTakenForItalian() {
+        assertFalse(TranslationFixService.looksNonPortuguese(withTitle("Bolo", List.of("2 col. de açúcar"))));
+        assertFalse(TranslationFixService.looksNonPortuguese(withTitle("Torta", List.of("250g de ricotta"))));
+        assertFalse(TranslationFixService.looksNonPortuguese(withTitle("Spaghetti ao Alho", List.of())));
+        assertFalse(TranslationFixService.looksNonPortuguese(withTitle("Bolo", List.of("Eu dei uma mexida"))));
+    }
+
+    @Test
     void leavesProperPortugueseAlone() {
         assertFalse(TranslationFixService.looksNonPortuguese(
                 withTitle("Bolo de Cenoura", List.of("2 xícaras de farinha de trigo", "3 ovos"))));

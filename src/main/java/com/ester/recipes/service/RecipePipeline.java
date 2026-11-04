@@ -3,6 +3,7 @@ package com.ester.recipes.service;
 import com.ester.recipes.config.EsterProperties;
 import com.ester.recipes.model.Recipe;
 import com.ester.recipes.model.StoredRecipe;
+import com.ester.recipes.pdf.BookSelection;
 import com.ester.recipes.pdf.RecipePdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,10 +16,13 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
@@ -49,9 +53,13 @@ public class RecipePipeline implements ApplicationRunner {
     /** Max processing rounds before giving up on images the model can't handle. */
     private static final int MAX_ROUNDS = 5;
 
+    /** Pause between rounds, giving a restarting Ollama server time to come back. */
+    Duration retryPause = Duration.ofSeconds(10);
+
     private final EsterProperties properties;
     private final RecipeExtractionService extractionService;
     private final RecipeJsonStore jsonStore;
+    private final RecipeCheckService checkService;
     private final TranslationFixService translationService;
     private final ImageGenerationService imageService;
     private final RecipePdfService pdfService;
@@ -60,6 +68,7 @@ public class RecipePipeline implements ApplicationRunner {
     public RecipePipeline(EsterProperties properties,
                           RecipeExtractionService extractionService,
                           RecipeJsonStore jsonStore,
+                          RecipeCheckService checkService,
                           TranslationFixService translationService,
                           ImageGenerationService imageService,
                           RecipePdfService pdfService,
@@ -67,6 +76,7 @@ public class RecipePipeline implements ApplicationRunner {
         this.properties = properties;
         this.extractionService = extractionService;
         this.jsonStore = jsonStore;
+        this.checkService = checkService;
         this.translationService = translationService;
         this.imageService = imageService;
         this.pdfService = pdfService;
@@ -96,15 +106,21 @@ public class RecipePipeline implements ApplicationRunner {
         log.info("Found {} new image(s) to process, {} already done -> batch of {} (concurrency {}).",
                 pending.size(), alreadyDone, batchTotal, concurrency);
 
+        warnAboutRepeatedImages(inputDir, processedDir);
+
         // agents.md: "do not continue until all images were processed". Retry in rounds until
-        // the input folder has no unprocessed images left, or a round makes no progress (an
-        // image the model genuinely can't handle — we then stop rather than loop forever).
+        // the input folder has no unprocessed images left. An image the model genuinely can't
+        // handle stops the run below, rather than looping forever or building an incomplete book.
         int round = 0;
         int totalProcessed = 0;
+        Set<Path> foundNoRecipe = ConcurrentHashMap.newKeySet();
         while (!pending.isEmpty() && round < MAX_ROUNDS) {
             round++;
             if (round > 1) {
                 log.info("Retry round {} — {} image(s) still need processing.", round, pending.size());
+                if (!pause()) {
+                    break;
+                }
             }
             Semaphore gate = new Semaphore(concurrency);
             AtomicInteger processed = new AtomicInteger();
@@ -112,27 +128,31 @@ public class RecipePipeline implements ApplicationRunner {
             for (Path image : pending) {
                 futures.add(taskExecutor.submit(
                         () -> processImage(image, jsonDir, processedDir, gate, processed,
-                                finished, batchTotal)));
+                                finished, batchTotal, foundNoRecipe)));
             }
             awaitAll(futures);
             totalProcessed += processed.get();
-            if (processed.get() == 0) {
-                log.warn("Round {} processed no new images — stopping retries.", round);
-                break;
-            }
             pending = pendingImages(inputDir, processedDir);
         }
 
-        List<Path> remaining = pendingImages(inputDir, processedDir);
-        if (remaining.isEmpty()) {
-            log.info("All images processed ({} new this run).", totalProcessed);
-        } else {
-            log.warn("{} image(s) could NOT be processed after {} round(s) and remain in {}: {}",
-                    remaining.size(), round, inputDir,
-                    remaining.stream().map(p -> p.getFileName().toString()).toList());
+        // A page the model keeps answering has no recipe, such as a cover, can never be processed,
+        // and must not stop the book. It is set aside and listed for a person to look over.
+        if (round == MAX_ROUNDS) {
+            pending.stream().filter(foundNoRecipe::contains).forEach(this::setAsideNoRecipe);
         }
 
+        List<Path> remaining = pendingImages(inputDir, processedDir);
+        if (!remaining.isEmpty()) {
+            throw new IllegalStateException(String.format(
+                    "%d image(s) could NOT be processed after %d round(s) and remain in %s: %s."
+                            + " Stopping before the PDF; run again, or move these images out of that folder.",
+                    remaining.size(), round, inputDir,
+                    remaining.stream().map(p -> p.getFileName().toString()).toList()));
+        }
+        log.info("All images processed ({} new this run).", totalProcessed);
+
         // The cookbook always reflects everything stored so far, not just this run.
+        jsonStore.normalizeAll(jsonDir);
         List<StoredRecipe> allRecipes = jsonStore.readAll(jsonDir);
         if (allRecipes.isEmpty()) {
             log.warn("No recipes stored in {} — skipping PDF generation. (Whole run took {}.)",
@@ -147,28 +167,39 @@ public class RecipePipeline implements ApplicationRunner {
             allRecipes = jsonStore.readAll(jsonDir); // re-read the corrected JSON for the PDF
         }
 
+        BookSelection book = BookSelection.select(allRecipes);
+        logSelection(book);
+
+        // Optional: read every scan with a second model and report the doubtful pages. It only
+        // writes a report, comparing with the verbatim text, which translating doesn't change.
+        if (properties.check() != null && properties.check().enabled()) {
+            log.info("Check phase enabled — second reading with {}.", properties.check().model());
+            checkService.checkAll(allRecipes, book, processedDir, Path.of(properties.outputDir()));
+        }
+
         // Optional, opt-in second phase: render an anime image per recipe via local ComfyUI.
         Path imageDir = Path.of(properties.jsonDir()).resolveSibling("images");
+        if (properties.images() != null && properties.images().dir() != null
+                && !properties.images().dir().isBlank()) {
+            imageDir = Path.of(properties.images().dir());
+        }
         if (properties.images() != null && properties.images().enabled()) {
-            if (properties.images().dir() != null && !properties.images().dir().isBlank()) {
-                imageDir = Path.of(properties.images().dir());
-            }
             log.info("Image phase enabled — generating missing images via ComfyUI at {}",
                     properties.images().baseUrl());
-            imageService.generateMissing(allRecipes, imageDir);
+            imageService.generateMissing(book.recipes(), imageDir);
             imageService.generateCover(imageDir);
         }
 
-        pdfService.write(allRecipes, pdfPath, properties.pdfTitle(), imageDir);
-        log.info("Done. {} recipe(s) total -> JSON in {} and PDF at {}. Whole run took {}.",
-                allRecipes.size(), jsonDir.toAbsolutePath(), pdfPath.toAbsolutePath(),
+        pdfService.write(book.recipes(), pdfPath, properties.pdfTitle(), imageDir);
+        log.info("Done. {} recipe(s) stored, {} in the book -> JSON in {} and PDF at {}. Whole run took {}.",
+                allRecipes.size(), book.recipes().size(), jsonDir.toAbsolutePath(), pdfPath.toAbsolutePath(),
                 humanDuration(System.nanoTime() - runStart));
     }
 
     /** Extract → write JSON → move one image. Self-contained: never lets one image abort the batch. */
     private void processImage(Path image, Path jsonDir, Path processedDir,
                               Semaphore gate, AtomicInteger processed,
-                              AtomicInteger finished, int batchTotal) {
+                              AtomicInteger finished, int batchTotal, Set<Path> foundNoRecipe) {
         String name = image.getFileName().toString();
         // Start the timer only after we hold a permit, so queued time isn't counted as
         // processing time (important when concurrency < number of images).
@@ -178,10 +209,13 @@ public class RecipePipeline implements ApplicationRunner {
             imageStart = System.nanoTime();
             try {
                 List<Recipe> recipes = extractionService.extract(image);
-                for (Recipe recipe : recipes) {
-                    jsonStore.write(recipe, jsonDir);
+                List<Path> written = jsonStore.writeAll(recipes, jsonDir);
+                try {
+                    moveToProcessed(image, processedDir);
+                } catch (RuntimeException e) {
+                    jsonStore.deleteAll(written); // the retry writes them again
+                    throw e;
                 }
-                moveToProcessed(image, processedDir);
                 processed.incrementAndGet();
                 // Progress advances only on success, so retried failures don't double-count.
                 log.info("Processed {} ({} recipe(s)) in {} — {}",
@@ -193,22 +227,82 @@ public class RecipePipeline implements ApplicationRunner {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             log.warn("Interrupted while processing {}", name);
+        } catch (RecipeExtractionService.NoRecipeFoundException e) {
+            // Left in place too: only a page that gets this answer in the last round is set aside.
+            foundNoRecipe.add(image);
+            log.warn("No recipe found in {} after {}.", name,
+                    humanDuration(System.nanoTime() - imageStart));
         } catch (Exception e) {
+            foundNoRecipe.remove(image);
             // Logged and left in place; a later round retries it.
             String took = imageStart == 0 ? "n/a" : humanDuration(System.nanoTime() - imageStart);
             log.error("Failed to process {} after {}: {}", name, took, e.getMessage());
         }
     }
 
-    /** Images in the input dir that have not yet been moved to processed/. */
+    private void setAsideNoRecipe(Path image) {
+        Path dir = Path.of(properties.noRecipeDir());
+        try {
+            Files.createDirectories(dir);
+            Path target = uniqueProcessedPath(image, dir);
+            Files.move(image, target);
+            log.warn("No recipe found in {} after every round: moved to {}. Please look it over.",
+                    image.getFileName(), target);
+        } catch (IOException e) {
+            log.error("Could not move {} to {}: {}", image.getFileName(), dir, e.getMessage());
+        }
+    }
+
+    private static void logSelection(BookSelection book) {
+        book.merged().forEach(m -> log.info("Repeated recipe: using {} and leaving out {}.",
+                m.kept().stem(), m.leftOut().stem()));
+        book.renamed().forEach(r -> log.info("Same name, different recipe: {} goes in the book as '{}'.",
+                r.recipe().stem(), r.newTitle()));
+        book.untitled().forEach(u -> log.warn("Leaving {} out of the book: its title is empty once cleaned ('{}').",
+                u.stem(), u.recipe().title()));
+    }
+
+    /** Images in the input dir that are not already in processed/ with the same content. */
     private List<Path> pendingImages(Path inputDir, Path processedDir) {
         List<Path> pending = new ArrayList<>();
         for (Path image : findImages(inputDir)) {
-            if (!Files.exists(processedDir.resolve(image.getFileName().toString()))) {
+            if (!alreadyProcessed(image, processedDir)) {
                 pending.add(image);
             }
         }
         return pending;
+    }
+
+    private boolean alreadyProcessed(Path image, Path processedDir) {
+        Path processed = processedDir.resolve(image.getFileName().toString());
+        try {
+            return Files.exists(processed) && Files.mismatch(image, processed) == -1;
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to compare " + image + " with " + processed, e);
+        }
+    }
+
+    private void warnAboutRepeatedImages(Path inputDir, Path processedDir) {
+        List<String> repeated = findImages(inputDir).stream()
+                .filter(image -> alreadyProcessed(image, processedDir))
+                .map(image -> image.getFileName().toString())
+                .toList();
+        if (!repeated.isEmpty()) {
+            log.warn("Skipping {} image(s) identical to one already in {}: {}",
+                    repeated.size(), processedDir, repeated);
+        }
+    }
+
+    /** Waits between rounds; returns false if the run was interrupted. */
+    private boolean pause() {
+        try {
+            Thread.sleep(retryPause);
+            return true;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.warn("Interrupted while waiting to retry.");
+            return false;
+        }
     }
 
     /** Advances and renders batch progress, e.g. {@code "37/389 (10%)"}. */
@@ -248,11 +342,24 @@ public class RecipePipeline implements ApplicationRunner {
     private void moveToProcessed(Path image, Path processedDir) {
         try {
             Files.createDirectories(processedDir);
-            Files.move(image, processedDir.resolve(image.getFileName()));
-            log.info("Moved {} -> {}", image.getFileName(), processedDir);
+            Path target = uniqueProcessedPath(image, processedDir);
+            Files.move(image, target);
+            log.info("Moved {} -> {}", image.getFileName(), target);
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to move processed image: " + image, e);
         }
+    }
+
+    /** A different image may reuse an old name; {@code a.jpg} then becomes {@code a-2.jpg}. */
+    private static Path uniqueProcessedPath(Path image, Path targetDir) {
+        String name = image.getFileName().toString();
+        int dot = name.lastIndexOf('.');
+        Path candidate = targetDir.resolve(name);
+        int counter = 2;
+        while (Files.exists(candidate)) {
+            candidate = targetDir.resolve(name.substring(0, dot) + "-" + counter++ + name.substring(dot));
+        }
+        return candidate;
     }
 
     private List<Path> findImages(Path inputDir) {

@@ -1,12 +1,19 @@
 target/
 output/
+runs/
 
 # Recipe image folders (your input scans + everything the app generates)
 recipes/pending/
 recipes/json/
 recipes/processed/
 recipes/images/
+recipes/check/
+recipes/no-recipe/
 recipes/dense-pending/
+
+# Local work folders: scan samples and copies used to compare readings
+compare/
+sample/
 
 # ComfyUI models/outputs (large; downloaded locally)
 comfyui/

@@ -3,7 +3,7 @@ package com.ester.recipes.service;
 import com.ester.recipes.config.EsterProperties;
 import com.ester.recipes.model.Recipe;
 import com.ester.recipes.model.StoredRecipe;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
@@ -64,16 +64,20 @@ public class TranslationFixService {
      * word, the recipe is treated as not-yet-Portuguese and sent to the translator.
      */
     // Italian-only markers. Words identical in Portuguese (e.g. "carne", "sal", "molho")
-    // are deliberately excluded to avoid flagging Portuguese recipes as false positives.
+    // are deliberately excluded to avoid flagging Portuguese recipes as false positives, as are
+    // "dei", "col" (short for colher) and names Brazilian recipes use as is, such as "ricotta".
     private static final Set<String> ITALIAN_MARKERS = Set.of(
-            "di", "alla", "allo", "alle", "della", "dello", "delle", "dei", "degli", "agli",
-            "col", "coi", "con", "gli", "uova", "uovo", "pollo", "prosciutto", "formaggio",
+            "di", "alla", "allo", "alle", "della", "dello", "delle", "degli", "agli",
+            "coi", "con", "gli", "uova", "uovo", "pollo", "prosciutto", "formaggio",
             "zucchero", "burro", "maccheroni", "insalata", "frittata", "spuma", "bibita",
             "zuppa", "avanzi", "pirofila", "chitarra", "diavola", "granchi", "rondine",
-            "triangolini", "brodo", "sugo", "pomodoro", "cipolla", "aglio", "ricotta",
-            "scaloppine", "cannelloni", "tagliatelle", "parmigiano", "besciamella", "panna",
+            "triangolini", "brodo", "sugo", "pomodoro", "cipolla", "aglio",
+            "scaloppine", "parmigiano", "besciamella", "panna",
             "latte", "vino", "acqua", "olio", "farina", "pesce", "dolce", "verdure",
-            "minestra", "contorno", "antipasto", "scampi", "baccala", "coppa", "spaghetti");
+            "minestra", "contorno", "antipasto", "baccala", "coppa");
+
+    /** Attempts per recipe before it is left for the next run. */
+    private static final int MAX_ATTEMPTS = 3;
 
     private final ChatClient chatClient;
     private final EsterProperties properties;
@@ -107,12 +111,12 @@ public class TranslationFixService {
             Path file = jsonDir.resolve(stored.stem() + ".json");
             // Idempotent: a recipe that already has its translated block is left untouched, so
             // re-runs only handle newly-extracted recipes (no costly re-translation).
-            if (recipe.translated() != null && !recipe.translated().isBlank()) {
+            if (isTranslated(recipe)) {
                 continue;
             }
             if (needsTranslation(recipe)) {
                 try {
-                    Recipe merged = merge(recipe, translate(recipe, model));
+                    Recipe merged = merge(recipe, translateWithRetry(recipe, model));
                     jsonStore.overwrite(merged, file);
                     translatedCount++;
                     log.info("Translated '{}' -> '{}'", recipe.title(), merged.title());
@@ -153,14 +157,54 @@ public class TranslationFixService {
         return sb.toString().trim();
     }
 
+    /** An Italian recipe whose "translation" equals its original was never really translated. */
+    private static boolean isTranslated(Recipe recipe) {
+        if (recipe.translated() == null || recipe.translated().isBlank()) {
+            return false;
+        }
+        return !("it".equalsIgnoreCase(recipe.originalLanguage())
+                && recipe.translated().equals(recipe.original()));
+    }
+
+    private Recipe translateWithRetry(Recipe recipe, String model) throws Exception {
+        for (int attempt = 1; ; attempt++) {
+            try {
+                return requireComplete(translate(recipe, model), recipe);
+            } catch (Exception e) {
+                if (attempt == MAX_ATTEMPTS) {
+                    throw e;
+                }
+                log.warn("Translation attempt {} failed for '{}': {}", attempt, recipe.title(), e.getMessage());
+            }
+        }
+    }
+
+    /** Rejects an answer with parts missing; saving it would mark Italian text as translated. */
+    private static Recipe requireComplete(Recipe translated, Recipe original) {
+        boolean complete = translated != null
+                && translated.title() != null && !translated.title().isBlank()
+                && (isEmpty(original.ingredients()) || !isEmpty(translated.ingredients()))
+                && (isEmpty(original.steps()) || !isEmpty(translated.steps()));
+        if (!complete) {
+            throw new IllegalStateException("The model returned an incomplete recipe");
+        }
+        return translated;
+    }
+
+    private static boolean isEmpty(List<String> list) {
+        return list == null || list.isEmpty();
+    }
+
     private Recipe translate(Recipe recipe, String model) throws Exception {
         String json = objectMapper.writeValueAsString(recipe);
-        OllamaChatOptions.Builder options = OllamaChatOptions.builder().format(responseSchema);
+        OllamaChatOptions.Builder options = OllamaChatOptions.builder()
+                .format(responseSchema)
+                .disableThinking();
         if (model != null && !model.isBlank()) {
             options.model(model);
         }
         return chatClient.prompt()
-                .options(options.build())
+                .options(options)
                 .user(PROMPT + json)
                 .call()
                 .entity(converter);
@@ -173,10 +217,10 @@ public class TranslationFixService {
         List<String> ingredients = emptyToOriginal(translated.ingredients(), original.ingredients());
         List<String> steps = emptyToOriginal(translated.steps(), original.steps());
         String yield = translated.yield() == null ? original.yield() : translated.yield();
-        Recipe pt = new Recipe(title,
+        Recipe pt = RecipeText.clean(new Recipe(title,
                 CategoryNormalizer.normalize(title, ingredients, translated.category()),
                 original.originalLanguage(), yield, original.date(), ingredients, steps,
-                original.sourceImage(), original.original(), "");
+                original.sourceImage(), original.original(), ""));
         return withTranslated(pt, textBlock(pt));
     }
 

@@ -52,6 +52,43 @@ class CategoryNormalizerTest {
     }
 
     @Test
+    void theDishNamedFirstWinsOverLaterFoodWords() {
+        assertEquals("Sobremesas", CategoryNormalizer.normalize("Pudim de Pão", List.of(), "Sobremesas"));
+        assertEquals("Massas", CategoryNormalizer.normalize("Macarrão ao Molho Pesto", List.of(), "Massas"));
+        assertEquals("Massas", CategoryNormalizer.normalize("Lasanha ao Molho Branco", List.of(), "Carnes"));
+        assertEquals("Sopas e Caldos", CategoryNormalizer.normalize("Sopa de Pão", List.of(), "Sopas e Caldos"));
+        assertEquals("Bolos e Tortas", CategoryNormalizer.normalize("Bolo de Pão", List.of(), "Pães"));
+        assertEquals("Molhos e Temperos", CategoryNormalizer.normalize("Molho de Tomate", List.of(), "Massas"));
+    }
+
+    @Test
+    void aSauceLaterInTheTitleDoesNotMakeTheDishASauce() {
+        assertEquals("Aves", CategoryNormalizer.normalize("Frango ao Molho de Mostarda", List.of(), "Aves"));
+        assertEquals("Peixes e Frutos do Mar", CategoryNormalizer.normalize(
+                "Peixe ao Molho de Camarão", List.of(), "Peixes e Frutos do Mar"));
+        assertEquals("Aves", CategoryNormalizer.normalize("Frango ao Molho de Mostarda", List.of(), "Outras"));
+    }
+
+    @Test
+    void phrasesWinOverTheirFirstWord() {
+        assertEquals("Sobremesas", CategoryNormalizer.normalize("Salada de Frutas", List.of(), "Saladas"));
+        assertEquals("Bebidas", CategoryNormalizer.normalize("Caldo de Cana", List.of(), "Sopas e Caldos"));
+        assertEquals("Sobremesas", CategoryNormalizer.normalize("Arroz Doce", List.of(), "Outras"));
+    }
+
+    @Test
+    void sideDishesLeaveTheSweetDefaultWithoutOverridingTheModel() {
+        assertEquals("Acompanhamentos", CategoryNormalizer.normalize("Arroz de Forno", List.of(), "Outras"));
+        assertEquals("Acompanhamentos", CategoryNormalizer.normalize("Feijão Tropeiro", List.of(), "Outras"));
+        assertEquals("Aves", CategoryNormalizer.normalize("Arroz de Forno com Frango", List.of(), "Aves"));
+    }
+
+    @Test
+    void aDishWordLaterInTheTitleStillRescuesAnUnknownCategory() {
+        assertEquals("Bolos e Tortas", CategoryNormalizer.normalize("Receita de Bolo", List.of(), "Outras"));
+    }
+
+    @Test
     void outrasIsNotInTheTaxonomy() {
         assertEquals(false, CategoryNormalizer.CANONICAL.contains("Outras"));
     }

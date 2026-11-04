@@ -4,18 +4,19 @@ import com.ester.recipes.model.Recipe;
 import com.ester.recipes.model.StoredRecipe;
 import com.ester.recipes.service.CategoryNormalizer;
 import com.ester.recipes.service.ImageGenerationService;
-import com.lowagie.text.Chunk;
-import com.lowagie.text.Document;
-import com.lowagie.text.Element;
-import com.lowagie.text.Font;
-import com.lowagie.text.FontFactory;
-import com.lowagie.text.Image;
-import com.lowagie.text.PageSize;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.Rectangle;
-import com.lowagie.text.pdf.PdfPCell;
-import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfWriter;
+import com.ester.recipes.service.RecipeText;
+import org.openpdf.text.Chunk;
+import org.openpdf.text.Document;
+import org.openpdf.text.Element;
+import org.openpdf.text.Font;
+import org.openpdf.text.FontFactory;
+import org.openpdf.text.Image;
+import org.openpdf.text.PageSize;
+import org.openpdf.text.Paragraph;
+import org.openpdf.text.Rectangle;
+import org.openpdf.text.pdf.PdfPCell;
+import org.openpdf.text.pdf.PdfPTable;
+import org.openpdf.text.pdf.PdfWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import javax.imageio.IIOImage;
@@ -35,6 +38,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
+import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
@@ -54,6 +58,17 @@ public class RecipePdfService {
 
     private static final Locale PT_BR = Locale.forLanguageTag("pt-BR");
     private static final Color ACCENT = new Color(140, 70, 20); // warm brown
+
+    /** The encoding of the built-in Helvetica fonts: anything outside it can't be drawn. */
+    private static final Charset WIN_ANSI = Charset.forName("windows-1252");
+
+    /** Common recipe symbols with no compatibility form that {@link #printable} could use. */
+    private static final Map<String, String> SYMBOLS = Map.of(
+            "→", "->", "←", "<-", "≈", "~", "≤", "<=", "≥", ">=", "−", "-", "✓", "-");
+
+    private static final float BODY_SIZE = 7.5f;
+    /** Smallest body text used to fit two long recipes on one page. */
+    private static final float MIN_BODY_SIZE = 5f;
 
     // agents.md: "use a small font". Cover title stays large; everything else is compact.
     private static final Font TITLE_FONT = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 30, ACCENT);
@@ -75,9 +90,9 @@ public class RecipePdfService {
      * @param imageDir  directory holding {@code <stem>.png} images; embedded when present
      */
     public void write(List<StoredRecipe> recipes, Path target, String bookTitle, Path imageDir) {
-        // Drop repeated recipe names, then group by a freshly-resolved category (so old
-        // "Outras"/inconsistent categories in the JSON are corrected at book-build time).
-        List<StoredRecipe> deduped = dedupeByTitle(recipes);
+        // Make the names unique without losing a recipe, then group by a freshly-resolved category
+        // (so old "Outras"/inconsistent categories in the JSON are corrected at book-build time).
+        List<StoredRecipe> deduped = BookSelection.select(recipes).recipes();
         Map<String, List<StoredRecipe>> byCategory = groupByCategory(deduped);
 
         Document document = new Document(PageSize.A4, 54, 54, 54, 54);
@@ -114,18 +129,6 @@ public class RecipePdfService {
         }
     }
 
-    /** Keeps the first recipe for each (accent-insensitive) title — no repeated names in the book. */
-    private List<StoredRecipe> dedupeByTitle(List<StoredRecipe> recipes) {
-        Map<String, StoredRecipe> unique = new java.util.LinkedHashMap<>();
-        for (StoredRecipe stored : recipes) {
-            String key = strip(stored.recipe().title());
-            if (!key.isBlank()) {
-                unique.putIfAbsent(key, stored);
-            }
-        }
-        return new java.util.ArrayList<>(unique.values());
-    }
-
     private Map<String, List<StoredRecipe>> groupByCategory(List<StoredRecipe> recipes) {
         Map<String, List<StoredRecipe>> byCategory = new TreeMap<>(Collator());
         for (StoredRecipe stored : recipes) {
@@ -146,19 +149,30 @@ public class RecipePdfService {
         heading.setSpacingAfter(14);
         document.add(heading);
 
+        PdfPTable table = new PdfPTable(new float[] {3, 1});
+        table.setWidthPercentage(50);
+        table.setHorizontalAlignment(Element.ALIGN_LEFT);
+        table.setHeaderRows(1);
+        table.addCell(summaryCell("Categoria", SECTION_FONT, Element.ALIGN_LEFT));
+        table.addCell(summaryCell("Receitas", SECTION_FONT, Element.ALIGN_RIGHT));
         for (Map.Entry<String, List<StoredRecipe>> entry : byCategory.entrySet()) {
-            Paragraph line = new Paragraph(
-                    entry.getKey() + ": " + entry.getValue().size() + " receita(s)", BODY_FONT);
-            line.setSpacingAfter(2);
-            document.add(line);
+            table.addCell(summaryCell(entry.getKey(), BODY_FONT, Element.ALIGN_LEFT));
+            table.addCell(summaryCell(String.valueOf(entry.getValue().size()), BODY_FONT, Element.ALIGN_RIGHT));
         }
-        Paragraph totalLine = new Paragraph("Total: " + total + " receitas", SECTION_FONT);
-        totalLine.setSpacingBefore(10);
-        document.add(totalLine);
+        table.addCell(summaryCell("Total", SECTION_FONT, Element.ALIGN_LEFT));
+        table.addCell(summaryCell(String.valueOf(total), SECTION_FONT, Element.ALIGN_RIGHT));
+        document.add(table);
+    }
+
+    private static PdfPCell summaryCell(String text, Font font, int alignment) {
+        PdfPCell cell = new PdfPCell(new Paragraph(text, font));
+        cell.setHorizontalAlignment(alignment);
+        cell.setPadding(3);
+        return cell;
     }
 
     /** Accent-stripped lowercase key for case/accent-insensitive title de-duplication. */
-    private static String strip(String text) {
+    static String strip(String text) {
         if (text == null) {
             return "";
         }
@@ -188,7 +202,8 @@ public class RecipePdfService {
 
         String date = LocalDate.now().format(DateTimeFormatter.ofPattern("dd 'de' MMMM 'de' yyyy", PT_BR));
         Paragraph subtitle = new Paragraph(
-                recipeCount + " receitas em " + categoryCount + " categorias\n" + date,
+                count(recipeCount, "receita", "receitas") + " em "
+                        + count(categoryCount, "categoria", "categorias") + "\n" + date,
                 SUBTITLE_FONT);
         subtitle.setAlignment(Element.ALIGN_CENTER);
         subtitle.setSpacingBefore(12);
@@ -209,6 +224,10 @@ public class RecipePdfService {
                 }
             }
         }
+    }
+
+    private static String count(int n, String singular, String plural) {
+        return n + " " + (n == 1 ? singular : plural);
     }
 
     /** One recipe with its sequential id (clickable-index destination) and resolved category. */
@@ -252,31 +271,55 @@ public class RecipePdfService {
             Entry first = ordered.get(i);
             Entry second = (i + 1 < ordered.size()) ? ordered.get(i + 1) : null;
 
-            PdfPTable table = new PdfPTable(2); // equal columns so the mirrored layout balances
-            table.setWidthPercentage(100);
-
-            table.addCell(recipeCell(first, imageDir));
-            table.addCell(imageCell(first, imageDir));
-
-            if (second != null) {
-                table.addCell(imageCell(second, imageDir));
-                table.addCell(recipeCell(second, imageDir));
-            } else {
-                table.addCell(emptyCell());
-                table.addCell(emptyCell());
-            }
-            document.add(table);
+            document.add(fittedPair(document, first, second, imageDir));
         }
     }
 
-    private PdfPCell recipeCell(Entry entry, Path imageDir) {
+    /** Lays out a pair, shrinking the text if needed so that both recipes share one page. */
+    private PdfPTable fittedPair(Document document, Entry first, Entry second, Path imageDir) {
+        float available = document.getPageSize().getHeight() - document.topMargin() - document.bottomMargin();
+        float width = document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin();
+        for (float size = BODY_SIZE; ; size -= 0.5f) {
+            PdfPTable table = pairTable(first, second, imageDir, size);
+            table.setTotalWidth(width);
+            if (table.getTotalHeight() <= available) {
+                return table;
+            }
+            if (size <= MIN_BODY_SIZE) {
+                log.warn("'{}' and its partner are too long to share a page, even in the smallest "
+                        + "text; they continue on the next one.", first.stored().recipe().title());
+                return table;
+            }
+        }
+    }
+
+    private PdfPTable pairTable(Entry first, Entry second, Path imageDir, float bodySize) {
+        Font body = FontFactory.getFont(FontFactory.HELVETICA, bodySize, Color.BLACK);
+        Font section = FontFactory.getFont(FontFactory.HELVETICA_BOLD, bodySize + 0.5f, Color.BLACK);
+        PdfPTable table = new PdfPTable(2); // equal columns so the mirrored layout balances
+        table.setWidthPercentage(100);
+
+        table.addCell(recipeCell(first, body, section));
+        table.addCell(imageCell(first, imageDir));
+
+        if (second != null) {
+            table.addCell(imageCell(second, imageDir));
+            table.addCell(recipeCell(second, body, section));
+        } else {
+            table.addCell(emptyCell());
+            table.addCell(emptyCell());
+        }
+        return table;
+    }
+
+    private PdfPCell recipeCell(Entry entry, Font body, Font sectionFont) {
         Recipe recipe = entry.stored().recipe();
         PdfPCell cell = new PdfPCell();
         cell.setBorder(Rectangle.NO_BORDER);
         cell.setPadding(7);
         cell.setVerticalAlignment(Element.ALIGN_TOP);
 
-        Paragraph kicker = new Paragraph(displayTitle(entry.category()).toUpperCase(PT_BR), KICKER_FONT);
+        Paragraph kicker = new Paragraph(displayTitle(entry.category()), KICKER_FONT);
         kicker.setSpacingAfter(1);
         cell.addElement(kicker);
 
@@ -291,28 +334,28 @@ public class RecipePdfService {
             cell.addElement(new Paragraph(meta, META_FONT));
         }
 
-        List<String> ingredients = dedupeIngredients(recipe.ingredients());
+        List<String> ingredients = RecipeText.ingredients(recipe.ingredients());
         if (!ingredients.isEmpty()) {
-            Paragraph section = new Paragraph("Ingredientes", SECTION_FONT);
+            Paragraph section = new Paragraph("Ingredientes", sectionFont);
             section.setSpacingBefore(4);
             section.setSpacingAfter(1);
             cell.addElement(section);
             boolean single = ingredients.size() == 1;
             for (String ingredient : ingredients) {
-                cell.addElement(new Paragraph((single ? "" : "•  ") + displayText(ingredient), BODY_FONT));
+                cell.addElement(new Paragraph((single ? "" : "•  ") + displayText(ingredient), body));
             }
         }
 
-        List<String> steps = recipe.steps() == null ? List.of() : recipe.steps();
+        List<String> steps = RecipeText.steps(recipe.steps());
         if (!steps.isEmpty()) {
-            Paragraph section = new Paragraph("Modo de preparo", SECTION_FONT);
+            Paragraph section = new Paragraph("Modo de preparo", sectionFont);
             section.setSpacingBefore(4);
             section.setSpacingAfter(1);
             cell.addElement(section);
             boolean single = steps.size() == 1;
             int n = 1;
             for (String step : steps) {
-                cell.addElement(new Paragraph((single ? "" : (n++ + ".  ")) + stepText(step), BODY_FONT));
+                cell.addElement(new Paragraph((single ? "" : (n++ + ".  ")) + displayText(step), body));
             }
         }
         return cell;
@@ -352,56 +395,46 @@ public class RecipePdfService {
         if (title == null) {
             return "";
         }
-        String t = title.replaceAll("[{}\",]", " ")           // remove } " { ,
-                .replaceAll("(?i)\\b(yield|kids)\\b", " ")      // remove these words
+        String t = title.replaceAll("[{}\",]", " ")                     // remove } " { ,
+                .replaceAll("(?i)\\b(yield|kids)\\b(\\s*:\\s*\\d*)?", " ") // remove these words
                 .replaceAll("[*]+", " ")
+                .replaceAll("[(\\[]\\s*[)\\]]", " ")                    // brackets they left empty
+                .replaceAll("^[\\s:;\\-–]+|[\\s:;\\-–]+$", "")
                 .replaceAll("\\s+", " ")
                 .trim();
-        return fixAllCaps(t);
+        return printable(RecipeText.fixAllCaps(t));
     }
 
     /** Cleans body text (ingredients/steps): fixes ALL-CAPS only. */
     static String displayText(String text) {
-        return fixAllCaps(text == null ? "" : text.trim());
+        return printable(RecipeText.fixAllCaps(text == null ? "" : text.trim()));
     }
 
-    /** Title-cases any word written in full uppercase (agents.md: no full-caps words). */
-    static String fixAllCaps(String text) {
-        if (text == null || text.isBlank()) {
-            return "";
-        }
+    /**
+     * Rewrites what the PDF's Helvetica fonts can't draw, which would otherwise vanish from the
+     * page: "⅓" becomes "1/3", "2⅓" becomes "2 1/3" and "℃" becomes "°C".
+     */
+    static String printable(String text) {
+        CharsetEncoder encoder = WIN_ANSI.newEncoder();
         StringBuilder sb = new StringBuilder();
-        for (String word : text.split(" ")) {
-            if (word.length() > 1 && word.equals(word.toUpperCase(PT_BR))
-                    && word.chars().anyMatch(Character::isLetter)) {
-                word = word.substring(0, 1).toUpperCase(PT_BR) + word.substring(1).toLowerCase(PT_BR);
+        Normalizer.normalize(text, Normalizer.Form.NFC).codePoints().forEach(codePoint -> {
+            String character = Character.toString(codePoint);
+            if (encoder.canEncode(character)) {
+                sb.append(character);
+                return;
             }
-            sb.append(word).append(' ');
-        }
-        return sb.toString().trim();
-    }
-
-    /** Removes duplicate ingredient lines (agents.md), case/space-insensitive, keeping order. */
-    private static List<String> dedupeIngredients(List<String> ingredients) {
-        if (ingredients == null) {
-            return List.of();
-        }
-        Map<String, String> unique = new java.util.LinkedHashMap<>();
-        for (String ingredient : ingredients) {
-            if (ingredient != null && !ingredient.isBlank()) {
-                unique.putIfAbsent(ingredient.trim().toLowerCase(PT_BR).replaceAll("\\s+", " "),
-                        ingredient.trim());
+            String replacement = SYMBOLS.getOrDefault(character,
+                    Normalizer.normalize(character, Normalizer.Form.NFKC).replace('\u2044', '/'));
+            if (!encoder.canEncode(replacement)) {
+                log.warn("The PDF font has no '{}' (U+{}); printing '?' in: {}",
+                        character, Integer.toHexString(codePoint).toUpperCase(Locale.ROOT), text);
+                replacement = "?";
             }
-        }
-        return new java.util.ArrayList<>(unique.values());
-    }
-
-    /** Strips a leading "N." / "N)" so my own numbering doesn't double (agents.md: no "1. 1."). */
-    private static String stepText(String step) {
-        String t = step == null ? "" : step.trim();
-        // Strip a leading "N." / "N)" AND any leading dash/bullet, so we don't render "1. - ...".
-        t = t.replaceFirst("^\\d+\\s*[.)\\-:]\\s*", "").replaceFirst("^[-–•*]\\s*", "").trim();
-        return displayText(t);
+            boolean mixedNumber = Character.isDigit(replacement.charAt(0))
+                    && !sb.isEmpty() && Character.isDigit(sb.charAt(sb.length() - 1));
+            sb.append(mixedNumber ? " " : "").append(replacement);
+        });
+        return sb.toString();
     }
 
     private String metaLine(Recipe recipe) {
@@ -428,7 +461,7 @@ public class RecipePdfService {
             }
             sb.append("Fonte: ").append(recipe.sourceImage());
         }
-        return sb.toString();
+        return printable(sb.toString());
     }
 
     private String originLabel(String lang) {

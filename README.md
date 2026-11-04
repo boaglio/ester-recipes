@@ -4,160 +4,162 @@
   <img src="docs/cover.jpg" alt="Receitas da Ester — book cover" width="420">
 </p>
 
-A Spring Boot + Spring AI app that turns a pile of **scanned cooking-recipe clippings**
-(Italian and Brazilian Portuguese, often several recipes per image, frequently rotated)
-into a single, illustrated **PDF cookbook** — *"Receitas da Ester"* — fully in Brazilian
-Portuguese, using only **local models** (Ollama + ComfyUI).
+An app that turns a pile of **scanned cooking-recipe clippings** (Italian and Brazilian
+Portuguese, often several recipes per image, frequently rotated) into a single, illustrated
+**PDF cookbook** — *"Receitas da Ester"* — fully in Brazilian Portuguese, using only **local
+models** (Ollama + ComfyUI).
 
-For each recipe it writes one JSON file (title, category, ingredients, steps, the verbatim
-`original` text and its Portuguese `translated` text) and renders a polished PDF: two
-recipes per page, a small anime image per dish, a clickable index, and a category summary.
+The book has two recipes per page, a small anime image per dish, a clickable index and a
+summary of recipes by category.
 
 > 🇧🇷 Versão em português: **[README.pt-BR.md](README.pt-BR.md)**
-
-Built on **Spring Boot 3.5.14** and **Spring AI 1.1.3** (Java 21+).
+>
+> 🛠️ Building, configuring or changing the app: **[DEVELOPMENT.md](DEVELOPMENT.md)**
 
 ## How it works
 
-The pipeline runs in phases so the 8 GB GPU only ever hosts one model at a time:
-
-```mermaid
-flowchart TD
-    A["recipes/pending/<br/>scanned .jpg clippings"]:::input
-
-    subgraph P1["Phase 1 · Extraction (local vision model)"]
-        B["RecipeExtractionService<br/>qwen2.5vl — faithful OCR,<br/>original language"]
-    end
-
-    subgraph P2["Phase 2 · Translation (local text model)"]
-        D["TranslationFixService<br/>gemma4 — Italian → PT-BR"]
-    end
-
-    subgraph P3["Phase 3 · Images (optional, ComfyUI)"]
-        F["ImageGenerationService<br/>anime image per recipe<br/>+ nonna cover"]
-    end
-
-    subgraph P4["Phase 4 · Book"]
-        H["RecipePdfService<br/>OpenPDF"]
-    end
-
-    A --> B
-    B -->|"one JSON per recipe<br/>(original text)"| C[("recipes/json/")]
-    B -->|"image read"| PR["recipes/processed/"]
-    C --> D
-    D -->|"adds translated text,<br/>PT-BR fields"| C
-    C --> F
-    F --> IMG[("recipes/images/")]
-    C --> H
-    IMG --> H
-    H --> PDF["output/<br/>receitas-da-ester-YYYY-MM-DD-HH_MI.pdf"]:::output
-
-    classDef input fill:#e8f0fe,stroke:#4267b2;
-    classDef output fill:#e6f4ea,stroke:#34a853;
-```
-
-1. **Extraction** — `RecipePipeline` scans `recipes/pending/`, skipping anything already in
-   `recipes/processed/`. Each image goes to the Ollama **vision model** (`qwen2.5vl`), which
-   transcribes it **faithfully in the original language** (no translation). A JSON schema is
-   passed as Ollama's `format`, so output is grammar-constrained to `{ "recipes": [ ... ] }`.
-   One JSON per recipe is written; the image is moved to `processed/`.
-2. **Translation** — `TranslationFixService` sends every non-Portuguese recipe to a stronger
-   **text model** (`gemma4`) for a clean Brazilian-Portuguese translation. Each recipe keeps
-   both its `original` (verbatim) and `translated` text. This phase is idempotent.
-3. **Images (optional)** — `ImageGenerationService` asks a local **ComfyUI** server for one
-   small anime image per recipe (food only, no people) plus a bigger cover of an Italian
-   *nonna* surrounded by every food category.
-4. **Book** — `RecipePdfService` (OpenPDF) builds the cookbook from all JSON: two recipes per
-   page with their images, a clickable index, a per-category summary, sorted by category.
-
-The batch is **resilient**: failures are logged and retried in rounds until every image is
-processed; runs are resumable (processed images are skipped); each run writes a timestamped
-log to `output/`.
+1. **Reading:** a local vision model transcribes each scan in its original language. Each
+   recipe becomes one JSON file, and the scan moves to `recipes/processed/`.
+2. **Checking:** a second model reads each scan again, and a report lists the pages where the
+   two readings disagree. It changes no recipe.
+3. **Translation:** recipes that aren't in Portuguese are translated to Brazilian Portuguese.
+4. **Images (optional):** ComfyUI draws one small anime image per recipe, plus the cover.
+5. **Book:** the PDF is built from all the recipes stored so far.
 
 ## Requirements
 
-- **Java 21+** (built/tested on JDK 25), **Maven 3.9+**
+- **Java 21+** and **Maven 3.9+** (Maven builds the app the first time you run it)
 - **Ollama** at `http://localhost:11434`, with the models pulled:
   ```bash
-  ollama pull qwen2.5vl:3b   # vision / OCR (fast, fits an 8 GB GPU)
-  ollama pull gemma4         # translation (stronger text model)
-  ollama pull qwen2.5vl:7b   # optional: for dense pages the 3b struggles with
+  ollama pull qwen2.5vl:7b   # reads the scans
+  ollama pull gemma4         # checks the readings and translates
   ```
-- **Docker** + the **NVIDIA Container Toolkit** — only for the optional image phase (ComfyUI).
+- **Docker** + the **NVIDIA Container Toolkit**, only for the optional images
 
 ## Run
 
-Put your scans in `recipes/pending/`, then:
+Put your scans in `recipes/pending/`, close anything else using the GPU, then:
 
 ```bash
-# Phase 1+2 — extract + translate, then build the PDF
-mvn spring-boot:run -Dspring-boot.run.arguments="--ester.translation.enabled=true"
-
-# Phase 3 — generate the anime images (after ComfyUI is up), then rebuild the PDF
-mvn spring-boot:run -Dspring-boot.run.arguments="--ester.images.enabled=true"
+./run-all.sh
 ```
 
-Outputs:
+It first checks Java, Ollama, both models, your scans, the free GPU memory and, if you asked for
+images, ComfyUI, and doesn't start if something needed is missing. To only run those checks, use
+`./run-all.sh --check`.
+
+Allow about 2 minutes per scan for reading and 30 seconds for checking; a page that gets the model stuck can take up to 40 minutes more. For a long batch, use
+this so closing the terminal doesn't stop it, and keep the computer from going to sleep:
+
+```bash
+./run-all.sh --check && nohup ./run-all.sh > run-all.log 2>&1 &
+tail -f run-all.log           # watch the progress
+```
+
+If the run stops, run the same command again: scans already read are skipped. A scan that keeps
+failing stops the run before the PDF, with an error naming it. Move that scan out of
+`recipes/pending/` and run again. A page where the model finds no recipe, such as a notebook cover,
+doesn't stop the run: it moves to `recipes/no-recipe/`, and the report lists it for you to look over.
+
+Then open `output/check-report-*.md` to see which pages need review. Two models can misread a word
+the same way, so a page that looks fine isn't proof of a correct one.
+
+## Files and folders
+
+```
+recipes/
+├── pending/      your scans waiting to be read
+├── processed/    scans already read
+├── no-recipe/    scans where no recipe was found, such as covers
+├── json/         one JSON file per recipe
+├── images/       one anime image per recipe, plus the cover
+└── check/        second readings of the scans, by model
+output/           the PDF books, check reports and app logs
+runs/             a record of each ./run-all.sh run
+comfyui/models/   ComfyUI models (only for the images)
+```
+
+The app creates these folders when it needs them. Your scans and everything generated stay on your
+machine and out of git.
+
+### Images
 
 | Path | Contents |
 |------|----------|
-| `recipes/json/<categoria>-<titulo>.json` | one JSON per recipe (`original` + `translated`) |
-| `recipes/processed/` | images already read (skipped on re-runs) |
-| `recipes/images/<stem>.png` | one small anime image per recipe + `_cover.png` |
-| `output/receitas-da-ester-YYYY-MM-DD-HH_MI.pdf` | the illustrated cookbook |
-| `output/process-YYYY-MM-DD_HH_MM_SS.log` | full log of each run |
+| `recipes/pending/*.jpg` | **You put your scans here.** Only `.jpg`, `.jpeg` and `.png` directly in this folder are read. |
+| `recipes/processed/` | Scans moved here once read; a file is never changed. A different scan with a name already used becomes `name-2.jpg`. |
+| `recipes/no-recipe/` | Scans where the model found no recipe in any of its attempts. If one has a recipe, move it back to `recipes/pending/`. |
+| `recipes/images/<recipe>.png` | The anime image of a recipe, with the same name as its JSON file. Recipes that already have an image are skipped. |
+| `recipes/images/_cover.png` | The book cover. |
 
-Build a runnable jar instead: `mvn clean package && java -jar target/ester-recipes-1.0.0.jar`.
+### Recipes
 
-## Configuration (`src/main/resources/application.yml`)
+| Path | Contents |
+|------|----------|
+| `recipes/json/<category>-<title>.json` | One recipe, such as `paes-pizza.json`: title, category, original language, yield, date, ingredients, steps, source scan, and the `original` and `translated` text. A repeated name becomes `paes-pizza-2.json`. |
+| `recipes/check/<model>/<scan>.txt` | The second reading of a scan, such as `gemma4-latest/page.jpg.txt`, so that scan isn't read again by that model. |
 
-| Key | Default | Meaning |
-|-----|---------|---------|
-| `spring.ai.ollama.chat.options.model` | `qwen2.5vl:3b` | vision / OCR model |
-| `spring.ai.ollama.chat.options.num-ctx` / `num-predict` | `8192` / `8192` | context + output caps (keep the model on-GPU, bound runaway) |
-| `ester.input-dir` | `./recipes/pending` | folder scanned for images |
-| `ester.concurrency` | `1` | images processed in parallel (virtual threads) |
-| `ester.translation.enabled` / `.model` | `false` / `gemma4:latest` | the translation phase |
-| `ester.images.enabled` / `.base-url` / `.checkpoint` | `false` / `localhost:8188` / … | the ComfyUI image phase |
-| `ester.pdf-title` | `Receitas da Ester` | cover title |
+### Book, reports and logs
 
-## Image generation (ComfyUI)
+| Path | Contents |
+|------|----------|
+| `output/receitas-da-ester-YYYY-MM-DD-HH_MI.pdf` | The book. Each run adds a new one. |
+| `output/check-report-YYYY-MM-DD-HH_MI.md` | The pages to review, with both readings side by side, scans with no recipe found, and recipes merged or numbered because their names repeat. |
+| `output/process-YYYY-MM-DD_HH_MM_SS.log` | The full log of a run. |
+| `runs/<timestamp>/process.log` | The same log, kept with the run's record. |
+| `runs/<timestamp>/run-info.txt` | Models, code version, scan counts, duration, exit code and main results. |
+| `runs/<timestamp>/check-report.md` | A copy of that run's report, if it got that far. |
 
-One-time: install the toolkit, drop a free anime checkpoint into `comfyui/models/checkpoints/`,
-and start the container:
+### Starting over
+
+Back up `recipes/json/` if you may want those recipes. Then move the scans from
+`recipes/processed/` and `recipes/no-recipe/` back to `recipes/pending/` and delete `recipes/json/`. Delete `recipes/check/`
+too if you want the scans checked again.
+
+Don't delete `recipes/json/` alone: scans in `recipes/processed/` aren't read again, so those recipes
+would be lost from the book.
+
+### Comparing runs
+
+```bash
+diff runs/<first>/run-info.txt runs/<second>/run-info.txt
+```
+
+To try other models, start over as above and run `MAIN_MODEL=other-model ./run-all.sh`.
+`CHECK_MODEL` works the same way.
+
+### Repeated recipe names
+
+The book never repeats a name, and the JSON files stay as they are. Two recipes with the same name
+and similar contents, such as a clipping scanned twice, count as one, and the most complete reading
+goes in the book. If the contents differ, both go in, the second as `Name (2)`.
+
+## Images and cover (optional)
+
+ComfyUI and Ollama don't fit together on an 8 GB GPU, so do this after the scans are read. One time
+only, install the toolkit, put a free anime checkpoint in `comfyui/models/checkpoints/` and start
+the container:
 
 ```bash
 sudo apt-get install -y nvidia-container-toolkit
 sudo nvidia-ctk runtime configure --runtime=docker && sudo systemctl restart docker
-# put e.g. an SD 1.5 anime model in comfyui/models/checkpoints/ and set ester.images.checkpoint
-docker compose up -d        # ComfyUI API on http://localhost:8188
+docker compose up -d        # ComfyUI on http://localhost:8188
 ```
 
-The recipe images are small and people-free; the cover is the *nonna* spread. Generated
-images are downscaled and embedded as compact JPEGs, so a 400-recipe book is only ~6 MB.
+If your checkpoint has another name, add `--ester.images.checkpoint=<file name>` to this command,
+which draws the images and builds the book again:
 
-## Project layout
-
+```bash
+./run-all.sh --ester.images.enabled=true
 ```
-model/Recipe.java                    one recipe (incl. original + translated text)
-model/StoredRecipe.java              recipe + its JSON file stem (links to its image)
-config/EsterProperties.java          @ConfigurationProperties("ester")
-service/RecipeExtractionService.java vision OCR, faithful, schema-constrained
-service/TranslationFixService.java   gemma4 translation phase (idempotent)
-service/CategoryNormalizer.java      canonical PT-BR categories (no "Outras")
-service/ImageGenerationService.java  ComfyUI image + cover generation
-service/ComfyUiClient.java           minimal ComfyUI HTTP client
-service/RecipeJsonStore.java         read/write per-recipe JSON
-service/RecipePipeline.java          orchestrates the phases
-pdf/RecipePdfService.java            two-per-page PDF, clickable index, summary, cover
-```
-
-The exact requirements this implements live in [`agents.md`](agents.md).
 
 ## Known limitations
 
-- **Dense multi-recipe pages** can defeat the 3B model (it truncates/loops). Re-run just
-  those through `qwen2.5vl:7b` (`--spring.ai.ollama.chat.options.model=qwen2.5vl:7b`).
-- **Translation quality** depends on the model. Small local models land ~85–90%; a few
-  Italian dish-names may survive. Set a stronger `ester.translation.model` for better results.
-- **OCR quality** depends on the scan; the clippings are old/rotated. Spot-check important recipes.
+- **Handwriting is read poorly**, with wrong words and sometimes wrong or missing quantities. Printed
+  and typed pages read much better. Review what the check report flags.
+- **Some pages make the model repeat itself** until its answer is cut off, usually in the ingredient
+  list. Retries discourage the repetition more each time, but a scan can still stay pending. Those
+  retries can change words, so check that page in the report.
+- **Translation** may leave a few Italian dish names behind.
+- **Reading quality** depends on the scan; the clippings are old and often rotated. Spot-check
+  important recipes.

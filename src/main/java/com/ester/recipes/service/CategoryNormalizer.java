@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -13,8 +14,10 @@ import java.util.regex.Pattern;
  *
  * <p>Signals, in priority order:</p>
  * <ol>
- *   <li><b>Title dish-word</b> (pizza, sopa, bolo, pudim…) — the strongest signal.</li>
+ *   <li><b>Title starting with a dish-word</b> (pizza, sopa, bolo, pudim…) — Portuguese names
+ *       the dish first, so "Pudim de Pão" is a pudim and "Frango ao Molho" is not a sauce.</li>
  *   <li><b>Model category</b> — exact canonical match, then keyword/synonym.</li>
+ *   <li><b>Earliest food word anywhere in the title</b> — dish, side dish or main ingredient.</li>
  *   <li><b>Ingredients</b> — a protein/pasta/sweet keyword reveals what the dish is.</li>
  *   <li><b>Default</b> — this collection is dessert-heavy, so the last resort is "Sobremesas".</li>
  * </ol>
@@ -47,6 +50,7 @@ public final class CategoryNormalizer {
     private static final Map<Pattern, String> TITLE_KEYWORDS = new LinkedHashMap<>();
     private static final Map<Pattern, String> CATEGORY_KEYWORDS = new LinkedHashMap<>();
     private static final Map<Pattern, String> INGREDIENT_KEYWORDS = new LinkedHashMap<>();
+    private static final Map<Pattern, String> SIDE_DISH_KEYWORDS = new LinkedHashMap<>();
 
     static {
         for (String canonical : CANONICAL) {
@@ -54,6 +58,9 @@ public final class CategoryNormalizer {
         }
 
         // Title dish-words (name the dish, not an ingredient).
+        // Longer phrases win over their first word: a fruit salad is a dessert, not a salad.
+        title("Sobremesas", "salada de frutas", "salada de fruta", "arroz doce", "arroz-doce");
+        title("Bebidas", "caldo de cana");
         title("Pães", "pizza", "pao", "paes", "focaccia", "rosca", "broa");
         title("Sopas e Caldos", "sopa", "sopao", "caldo", "canja", "zuppa", "minestra");
         title("Saladas", "salada", "insalata");
@@ -97,6 +104,10 @@ public final class CategoryNormalizer {
                 "vitela", "cordeiro", "linguica", "bacon", "picanha", "maminha", "pernil", "carneiro",
                 "coelho", "fil mignon", "file mignon", "cupim");
         ingredient("Sobremesas", "leite condensado", "chocolate", "cacau", "chantilly", "sorvete");
+
+        // Only a weak signal: "Arroz de Forno com Frango" may well be a main dish.
+        addAll(SIDE_DISH_KEYWORDS, "Acompanhamentos", "arroz", "feijao", "farofa", "pure", "polenta",
+                "batata", "legume");
     }
 
     private CategoryNormalizer() {
@@ -109,9 +120,9 @@ public final class CategoryNormalizer {
      * @return one of {@link #CANONICAL}, never "Outras"
      */
     public static String normalize(String title, List<String> ingredients, String rawCategory) {
-        String byTitle = keywordMatch(title, TITLE_KEYWORDS);
-        if (byTitle != null) {
-            return byTitle;
+        Match dish = earliestMatch(title, TITLE_KEYWORDS);
+        if (dish != null && dish.start() == 0) {
+            return dish.category();
         }
         if (rawCategory != null && !rawCategory.isBlank() && !isOutras(rawCategory)) {
             String exact = BY_NORMALIZED.get(strip(rawCategory));
@@ -123,6 +134,11 @@ public final class CategoryNormalizer {
                 return byCategory;
             }
         }
+        Match food = earliestOf(dish, earliestOf(earliestMatch(title, INGREDIENT_KEYWORDS),
+                earliestMatch(title, SIDE_DISH_KEYWORDS)));
+        if (food != null) {
+            return food.category();
+        }
         if (ingredients != null && !ingredients.isEmpty()) {
             String joined = String.join(" ", ingredients);
             String byIngredient = keywordMatch(joined, INGREDIENT_KEYWORDS);
@@ -131,6 +147,36 @@ public final class CategoryNormalizer {
             }
         }
         return DEFAULT_CATEGORY;
+    }
+
+    /** Where a keyword was found in a title and how long it is. */
+    private record Match(int start, int length, String category) {
+    }
+
+    /** The keyword found first in the text; between keywords at the same spot, the longest. */
+    private static Match earliestMatch(String text, Map<Pattern, String> keywords) {
+        if (text == null || text.isBlank()) {
+            return null;
+        }
+        String norm = strip(text);
+        Match best = null;
+        for (Map.Entry<Pattern, String> entry : keywords.entrySet()) {
+            Matcher matcher = entry.getKey().matcher(norm);
+            if (matcher.find()) {
+                best = earliestOf(best, new Match(matcher.start(), matcher.end() - matcher.start(), entry.getValue()));
+            }
+        }
+        return best;
+    }
+
+    private static Match earliestOf(Match a, Match b) {
+        if (a == null || b == null) {
+            return a == null ? b : a;
+        }
+        if (a.start() != b.start()) {
+            return a.start() < b.start() ? a : b;
+        }
+        return a.length() >= b.length() ? a : b;
     }
 
     private static boolean isOutras(String raw) {

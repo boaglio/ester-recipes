@@ -1,8 +1,8 @@
 package com.ester.recipes.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +16,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
@@ -63,7 +62,7 @@ class ComfyUiClient {
      * @throws InterruptedException if interrupted while polling
      */
     byte[] generate(Request request) throws IOException, InterruptedException {
-        ObjectNode workflow = workflowTemplate.deepCopy();
+        ObjectNode workflow = (ObjectNode) workflowTemplate.deepCopy();
         inputs(workflow, NODE_CHECKPOINT).put("ckpt_name", request.checkpoint());
         inputs(workflow, NODE_POSITIVE).put("text", request.positive());
         inputs(workflow, NODE_NEGATIVE).put("text", request.negative());
@@ -99,7 +98,7 @@ class ComfyUiClient {
         if (errors != null && errors.size() > 0) {
             throw new IOException("ComfyUI rejected the workflow: " + errors);
         }
-        String id = json.path("prompt_id").asText(null);
+        String id = json.path("prompt_id").asString(null);
         if (id == null) {
             throw new IOException("ComfyUI /prompt did not return a prompt_id: " + res.body());
         }
@@ -132,8 +131,8 @@ class ComfyUiClient {
 
     /** Finds the first {@code images[0]} across all output nodes. */
     private JsonNode firstImage(JsonNode outputs) {
-        for (Iterator<Map.Entry<String, JsonNode>> it = outputs.fields(); it.hasNext(); ) {
-            JsonNode images = it.next().getValue().path("images");
+        for (Map.Entry<String, JsonNode> output : outputs.properties()) {
+            JsonNode images = output.getValue().path("images");
             if (images.isArray() && !images.isEmpty()) {
                 return images.get(0);
             }
@@ -144,9 +143,9 @@ class ComfyUiClient {
     /** GET /view?filename=...&subfolder=...&type=... -> PNG bytes. */
     private byte[] download(String baseUrl, JsonNode imageRef) throws IOException, InterruptedException {
         String url = baseUrl + "/view"
-                + "?filename=" + enc(imageRef.path("filename").asText())
-                + "&subfolder=" + enc(imageRef.path("subfolder").asText(""))
-                + "&type=" + enc(imageRef.path("type").asText("output"));
+                + "?filename=" + enc(imageRef.path("filename").asString())
+                + "&subfolder=" + enc(imageRef.path("subfolder").asString(""))
+                + "&type=" + enc(imageRef.path("type").asString("output"));
         HttpRequest req = HttpRequest.newBuilder(URI.create(url))
                 .timeout(Duration.ofSeconds(30))
                 .GET()

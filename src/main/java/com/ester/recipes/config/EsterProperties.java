@@ -7,6 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  * @param inputDir     directory scanned for recipe images
  * @param processedDir directory images are moved into once successfully processed
+ * @param noRecipeDir  directory for images the model repeatedly found no recipe in
  * @param jsonDir      directory for the per-recipe JSON files
  * @param outputDir    directory where the PDF cookbook is written
  * @param pdfName      file name of the generated cookbook PDF (under outputDir)
@@ -14,6 +15,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @param concurrency  how many images to process in parallel (each is one in-flight
  *                     Ollama request). Keep it in line with the GPU's capacity and the
  *                     server's {@code OLLAMA_NUM_PARALLEL}. Values &lt; 1 are treated as 1.
+ * @param maxImageSide longest side, in pixels, of the image sent to the vision model; bigger
+ *                     scans are scaled down for the request. 0 or less sends the original.
+ * @param check        optional second reading of every scan, to report doubtful pages
  * @param images       optional anime-image generation phase (via a local ComfyUI server)
  * @param translation  optional second routine that fixes non-Portuguese text in the JSON
  */
@@ -21,14 +25,31 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record EsterProperties(
         String inputDir,
         String processedDir,
+        String noRecipeDir,
         String jsonDir,
         String outputDir,
         String pdfName,
         String pdfTitle,
         int concurrency,
+        int maxImageSide,
+        Check check,
         ImageGen images,
         Translation translation
 ) {
+
+    /**
+     * Settings for the optional check phase ({@code ester.check.*}).
+     *
+     * @param enabled when false (default) the phase is skipped entirely
+     * @param model   Ollama vision model for the second reading; must differ from the main one
+     * @param dir     directory keeping the second readings, so no scan is read twice
+     */
+    public record Check(
+            boolean enabled,
+            String model,
+            String dir
+    ) {
+    }
 
     /**
      * Settings for the optional translation-fix phase ({@code ester.translation.*}).
