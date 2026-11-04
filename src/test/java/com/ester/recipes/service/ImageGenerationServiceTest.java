@@ -18,17 +18,28 @@ class ImageGenerationServiceTest {
 
         String prompt = ImageGenerationService.buildPositivePrompt(r);
 
-        assertTrue(prompt.contains("anime style food still life"), prompt);
+        assertTrue(prompt.contains("anime style food illustration"), prompt);
         assertTrue(prompt.contains("Bolo de Cenoura"), prompt);
         assertTrue(prompt.contains("cenoura"), prompt);
         // Quantities/measures are stripped from the ingredient hints.
         assertFalse(prompt.matches(".*\\b300g\\b.*"), prompt);
+        // Naming people or an empty scene, even negated, makes the model draw them.
+        for (String word : List.of("people", "characters", "empty", "table")) {
+            assertFalse(prompt.contains(word), word + " in: " + prompt);
+        }
     }
 
     @Test
     void handlesEmptyRecipeGracefully() {
         Recipe r = new Recipe("", "Outras", "", "", "", List.of(), List.of(), "", "", "");
         String prompt = ImageGenerationService.buildPositivePrompt(r);
-        assertTrue(prompt.contains("anime style food still life"), prompt);
+        assertTrue(prompt.contains("anime style food illustration"), prompt);
+    }
+
+    @Test
+    void seedOffsetChangesTheSeedButKeepsItReproducible() {
+        long base = ImageGenerationService.recipeSeed("sobremesas-flan-di-pane", 0);
+        assertTrue(base == ImageGenerationService.recipeSeed("sobremesas-flan-di-pane", 0));
+        assertFalse(base == ImageGenerationService.recipeSeed("sobremesas-flan-di-pane", 1));
     }
 }

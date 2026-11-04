@@ -118,6 +118,7 @@ Defaults are in `src/main/resources/application.yml`. Override any of them with 
 | `ester.translation.enabled` / `.model` | `false` / `gemma4:latest` | the translation phase |
 | `ester.images.enabled` / `.base-url` / `.checkpoint` | `false` / `localhost:8188` / … | the ComfyUI image phase |
 | `ester.images.dir` | `./recipes/images` | folder of the generated images |
+| `ester.images.seed-offset` | `0` | added to every image seed; change it to redraw deleted images differently |
 | `ester.pdf-title` | `Receitas da Ester` | cover title |
 
 `run-all.sh` expects the default folders when it counts scans and copies the report.

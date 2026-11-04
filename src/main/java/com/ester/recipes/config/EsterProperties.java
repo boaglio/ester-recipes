@@ -76,6 +76,7 @@ public record EsterProperties(
      * @param dir            directory the PNGs are written to (one {@code <stem>.png} per recipe)
      * @param negativePrompt shared negative prompt
      * @param timeoutSeconds max wait for one image before giving up
+     * @param seedOffset     added to every seed; change it to redraw deleted images differently
      */
     public record ImageGen(
             boolean enabled,
@@ -86,7 +87,8 @@ public record EsterProperties(
             int height,
             String dir,
             String negativePrompt,
-            int timeoutSeconds
+            int timeoutSeconds,
+            long seedOffset
     ) {
     }
 }

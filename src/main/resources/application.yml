@@ -76,8 +76,11 @@ ester:
     width: 512
     height: 512
     dir: ./recipes/images
-    negative-prompt: "1girl, 1boy, person, people, human, character, woman, man, girl, boy, face, hands, portrait, lowres, blurry, text, watermark, signature, deformed, ugly"
+    negative-prompt: "1girl, 1boy, person, people, human, character, woman, man, girl, boy, maid, face, hands, portrait, room, interior, restaurant, dining room, kitchen, cafeteria, chairs, furniture, window, shelves, scenery, empty table, empty plate, lowres, blurry, text, watermark, signature, deformed, ugly"
     timeout-seconds: 180
+    # Added to every image seed. Images are reproducible, so deleting one and running again
+    # draws the same picture; change this (1, 2, ...) to get different ones.
+    seed-offset: 0
 
   # Optional second routine: translate any recipe that still has non-Portuguese (e.g. Italian)
   # text into Brazilian Portuguese, in place. OFF by default.

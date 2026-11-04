@@ -153,6 +153,14 @@ which draws the images and builds the book again:
 ./run-all.sh --ester.images.enabled=true
 ```
 
+To redraw a picture you don't like, such as one with a person in it, delete its file in
+`recipes/images/` (`_cover.png` for the cover) and run again with a new seed. Only the deleted
+pictures are drawn, and the same seed always gives the same picture, so use 2, 3 and so on next time:
+
+```bash
+./run-all.sh --ester.images.enabled=true --ester.images.seed-offset=1
+```
+
 ## Known limitations
 
 - **Handwriting is read poorly**, with wrong words and sometimes wrong or missing quantities. Printed

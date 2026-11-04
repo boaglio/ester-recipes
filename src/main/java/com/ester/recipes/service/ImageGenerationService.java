@@ -94,7 +94,7 @@ public class ImageGenerationService {
                     cfg.checkpoint(),
                     COVER_PROMPT,
                     COVER_NEGATIVE, // the cover deliberately includes a person (the nonna)
-                    42L,
+                    42L + cfg.seedOffset(),
                     cfg.steps(),
                     768,
                     1024,
@@ -110,22 +110,27 @@ public class ImageGenerationService {
         }
     }
 
+    // The model draws what a prompt names, even after "no": the people go in the negative
+    // prompt only. "Apron" alone gave a young maid, so the age is spelled out several ways.
     private static final String COVER_PROMPT =
-            "masterpiece, best quality, anime style cookbook cover illustration, a kind smiling "
-            + "elderly Italian grandmother (nonna) with grey hair and an apron, standing behind "
-            + "a big rustic table full of assorted food covering every category: cakes and pies, "
-            + "desserts, fruit drinks, pasta, roasted meats, fish, fresh salads, breads, jams and "
-            + "preserves, soups, appetizers, all together, vibrant colors, warm cozy lighting, "
-            + "highly detailed, no text";
+            "masterpiece, best quality, anime style cookbook cover illustration, solo, "
+            + "an old Italian grandmother (nonna), (elderly woman:1.3), (old age:1.2), about 75 "
+            + "years old, (wrinkled face:1.3), wrinkles around the eyes, sagging cheeks, kind "
+            + "smile, white hair in a bun, round glasses, plump, simple dark dress "
+            + "with a kitchen apron, standing behind a big rustic table full of assorted food "
+            + "covering every category: cakes and pies, desserts, fruit drinks, pasta, roasted "
+            + "meats, fish, fresh salads, breads, jams and preserves, soups, appetizers, "
+            + "vibrant colors, warm cozy lighting, highly detailed";
 
     private static final String COVER_NEGATIVE =
-            "lowres, blurry, text, watermark, signature, deformed, extra fingers, ugly, "
-            + "multiple people, crowd";
+            "young, youthful, smooth skin, girl, teenage, child, maid, maid headdress, frills, "
+            + "multiple people, crowd, "
+            + "lowres, blurry, text, watermark, signature, deformed, extra fingers, ugly";
 
     private ComfyUiClient.Request buildRequest(StoredRecipe stored, EsterProperties.ImageGen cfg) {
         Recipe recipe = stored.recipe();
-        // Stable per-recipe seed so re-runs reproduce the same image.
-        long seed = Integer.toUnsignedLong(stored.stem().hashCode());
+        // Stable per-recipe seed so re-runs reproduce the same image; seed-offset gives new ones.
+        long seed = recipeSeed(stored.stem(), cfg.seedOffset());
         return new ComfyUiClient.Request(
                 cfg.baseUrl(),
                 cfg.checkpoint(),
@@ -136,6 +141,10 @@ public class ImageGenerationService {
                 cfg.width(),
                 cfg.height(),
                 Duration.ofSeconds(Math.max(30, cfg.timeoutSeconds())));
+    }
+
+    static long recipeSeed(String stem, long seedOffset) {
+        return Integer.toUnsignedLong(stem.hashCode()) + seedOffset;
     }
 
     /** Builds an anime food-illustration prompt from the recipe's title and a few ingredients. */
@@ -150,16 +159,19 @@ public class ImageGenerationService {
                     .reduce((a, b) -> a + ", " + b)
                     .orElse("");
         }
+        // Only what should be seen: the model draws whatever a prompt names, even after
+        // "no" ("no people", "empty scene" gave people and empty dining rooms). What must not
+        // appear goes in the negative prompt, ester.images.negative-prompt.
         StringBuilder prompt = new StringBuilder(
-                "masterpiece, best quality, anime style food still life, only food, no characters");
+                "masterpiece, best quality, anime style food illustration, close-up of one dish");
         if (!title.isBlank()) {
             prompt.append(", \"").append(title).append('"');
         }
         if (!mainIngredients.isBlank()) {
             prompt.append(", made with ").append(mainIngredients);
         }
-        prompt.append(", plated dish on a table, food photography, appetizing, vibrant colors, "
-                + "soft studio lighting, highly detailed, no people, empty scene");
+        prompt.append(", served on a plate, centered, seen from above, the food fills the picture, "
+                + "appetizing, vibrant colors, soft lighting, plain background, highly detailed");
         return prompt.toString();
     }
 

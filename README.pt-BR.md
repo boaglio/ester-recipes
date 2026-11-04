@@ -155,6 +155,15 @@ comando, que desenha as imagens e gera o livro de novo:
 ./run-all.sh --ester.images.enabled=true
 ```
 
+Para redesenhar uma imagem de que você não gostou, como uma com uma pessoa, apague o arquivo dela em
+`recipes/images/` (`_cover.png` para a capa) e rode de novo com outra semente. Só as imagens apagadas
+são desenhadas, e a mesma semente sempre dá a mesma imagem, então use 2, 3 e assim por diante da
+próxima vez:
+
+```bash
+./run-all.sh --ester.images.enabled=true --ester.images.seed-offset=1
+```
+
 ## Limitações conhecidas
 
 - **Letra à mão é mal lida**, com palavras erradas e às vezes quantidades erradas ou ausentes. Páginas
