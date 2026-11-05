@@ -1,12 +1,12 @@
 {
-  "title" : "Massa em Flor",
+  "title" : "Pastéis em Flores",
   "category" : "Entradas e Petiscos",
-  "originalLanguage" : "pt",
-  "yield" : "4 porções",
+  "originalLanguage" : "it",
+  "yield" : "",
   "date" : "",
-  "ingredients" : [ "Meio guillo farinha - 2 colheres de", "margarina, sal" ],
-  "steps" : [ "Abrir a massa bem fina e moldar com um copo, dividir em 6 moldes.", "Colocar 3 estrelas uma sobre a outra, formando 1 flor" ],
+  "ingredients" : [ "1/2 kg de farinha", "2 colheres de margarina", "sal" ],
+  "steps" : [ "Abra a massa bem fina e corte com um copo, fazendo 6 cortes em cada disco.", "Coloque 3 discos um sobre o outro, formando uma flor." ],
   "sourceImage" : "20251024_132842553.jpg",
-  "original" : "Pasta em flore\nMezzo guillo farina - 2 cucchiai di\nmargarina, sale\nStendere la pasta ben fine e tegliare con un bicchiere, dividere in 6 tegli.\nMettere 3 stelle una sull'altro, formando 1 fiore",
-  "translated" : "Massa em Flor\nMeio guillo farinha - 2 colheres de\nmargarina, sal\nAbrir a massa bem fina e moldar com um copo, dividir em 6 moldes.\nColocar 3 estrelas uma sobre a outra, formando 1 flor"
+  "original" : "Pasteis em flores\nmezzo chilo farina\n2 cucchiai di margarina\nsale\nStendere la pasta ben fine e tagliare con un bicchiere, dividere in 6 tagli.\nMettere 3 rotelle una sull'altra, formando 1 fiore.",
+  "translated" : "Pastéis em Flores\n1/2 kg de farinha\n2 colheres de margarina\nsal\nAbra a massa bem fina e corte com um copo, fazendo 6 cortes em cada disco.\nColoque 3 discos um sobre o outro, formando uma flor."
 }

@@ -1,12 +1,12 @@
 {
-  "title" : "Fondue de chocolate",
+  "title" : "Fondue de Chocolate com Frutas",
   "category" : "Sobremesas",
   "originalLanguage" : "pt",
   "yield" : "",
   "date" : "",
-  "ingredients" : [ "300g de chocolate (ao leite)", "1 lata de creme de leite sem soro" ],
-  "steps" : [ "Morcego, pene, meca, banana, pesepe em calde, goiabe em calde, melão, bolo inglês e panettone." ],
+  "ingredients" : [ "300 g de chocolate ao leite", "1 lata de creme de leite sem soro", "frutas: morango, pera, maçã, banana, pêssego em calda, goiaba em calda, melão, bolo inglês e panettone" ],
+  "steps" : [ "Derreta o chocolate com o creme de leite e sirva com as frutas, o bolo inglês e o panettone em pedaços." ],
   "sourceImage" : "20251027_154506353.jpg",
-  "original" : "Fondue de chocolate\n300g de chocolate (ao leite)\n1 lata de creme de leite sem soro\nMorcego, pene, meca, banana, pesepe em calde, goiabe em calde, melão, bolo inglês e panettone.",
-  "translated" : "Fondue de chocolate\n300g de chocolate (ao leite)\n1 lata de creme de leite sem soro\nMorcego, pene, meca, banana, pesepe em calde, goiabe em calde, melão, bolo inglês e panettone."
+  "original" : "Fondue de Chocolate com Frutas\n300 g de chocolate ao leite\n1 lata de creme de leite sem soro\nfrutas: morango, pera, maçã, banana, pêssego em calda, goiaba em calda, melão, bolo inglês e panettone\nDerreta o chocolate com o creme de leite e sirva com as frutas, o bolo inglês e o panettone em pedaços.",
+  "translated" : "Fondue de Chocolate com Frutas\n300 g de chocolate ao leite\n1 lata de creme de leite sem soro\nfrutas: morango, pera, maçã, banana, pêssego em calda, goiaba em calda, melão, bolo inglês e panettone\nDerreta o chocolate com o creme de leite e sirva com as frutas, o bolo inglês e o panettone em pedaços."
 }
