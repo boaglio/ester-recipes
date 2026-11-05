@@ -1,12 +1,12 @@
 {
-  "title" : "Receita Para Um Bolo de Páscoa",
+  "title" : "Torta de Páscoa",
   "category" : "Bolos e Tortas",
   "originalLanguage" : "it",
   "yield" : "",
   "date" : "",
-  "ingredients" : [ "100 gr de manteiga", "100 gr de açúcar", "100 gr de amêndoas sem casca", "2 barras de chocolate", "5 gemas", "5 claras em neve" ],
-  "steps" : [ "Tudo bem misturado e dividido em 3 e bem cozido no forno formará três formas de massa folhada.", "Agora misturar 140 gr de manteiga, 125 gr de açúcar, 3 ovos inteiros, e 2 ou 3 barras de chocolate; encher as folhas com esta mistura e despejar açúcar derretido por cima. Sobre o açúcar ainda quente colocar pressionando, em distâncias regulares, pequenas gemas de açúcar branco e colocar o bolo por um tempo na geladeira." ],
+  "ingredients" : [ "massa: 100 g de manteiga, 100 g de açúcar, 100 g de amêndoas sem casca, 2 barras de chocolate, 5 gemas e 5 claras em neve", "recheio: 140 g de manteiga, 125 g de açúcar, 3 ovos inteiros e 2 ou 3 barras de chocolate", "açúcar derretido", "ovinhos de açúcar brancos" ],
+  "steps" : [ "Misture bem os ingredientes da massa, divida em 3 e asse bem no forno, formando três discos.", "Misture os ingredientes do recheio e recheie os discos com essa mistura.", "Despeje açúcar derretido por cima e, com o açúcar ainda quente, aperte ovinhos de açúcar brancos a distâncias regulares.", "Leve a torta à geladeira por algum tempo." ],
   "sourceImage" : "20251027_104152189.jpg",
   "original" : "RICETTA PER UNA TORTA DI PASQUA\n100 gr. di burro\n100 gr. di zucchero\n100 gr. di mandorle sbucciate\n2 stecche di cioccolato\n5 tuorli\n5 chiare montate a neve\nIl tutto ben mescolato e suddiviso in 3 e ben cotto al forno formerà tre sformati di pasta sfoglia.\nOra mescolare 140 gr. di burro, 125 gr. di zucchero, 3 uova intere, e 2 o 3 stecche di cioccolato; riempire con questo composto le sfoglie e versarvi sopra zucchero fuso. Sullo zucchero ancora caldo porre premando, a distanze regolari, delle piccole uova di zucchero bianche e mettere la torta per un po' in frigorifero.",
-  "translated" : "Receita Para Um Bolo de Páscoa\n100 gr de manteiga\n100 gr de açúcar\n100 gr de amêndoas sem casca\n2 barras de chocolate\n5 gemas\n5 claras em neve\nTudo bem misturado e dividido em 3 e bem cozido no forno formará três formas de massa folhada.\nAgora misturar 140 gr de manteiga, 125 gr de açúcar, 3 ovos inteiros, e 2 ou 3 barras de chocolate; encher as folhas com esta mistura e despejar açúcar derretido por cima. Sobre o açúcar ainda quente colocar pressionando, em distâncias regulares, pequenas gemas de açúcar branco e colocar o bolo por um tempo na geladeira."
+  "translated" : "Torta de Páscoa\nmassa: 100 g de manteiga, 100 g de açúcar, 100 g de amêndoas sem casca, 2 barras de chocolate, 5 gemas e 5 claras em neve\nrecheio: 140 g de manteiga, 125 g de açúcar, 3 ovos inteiros e 2 ou 3 barras de chocolate\naçúcar derretido\novinhos de açúcar brancos\nMisture bem os ingredientes da massa, divida em 3 e asse bem no forno, formando três discos.\nMisture os ingredientes do recheio e recheie os discos com essa mistura.\nDespeje açúcar derretido por cima e, com o açúcar ainda quente, aperte ovinhos de açúcar brancos a distâncias regulares.\nLeve a torta à geladeira por algum tempo."
 }
