@@ -1,12 +1,12 @@
 {
-  "title" : "Ponche de Limão e Morango",
+  "title" : "Refresco de Morango e Limão",
   "category" : "Bebidas",
   "originalLanguage" : "it",
   "yield" : "",
   "date" : "",
-  "ingredients" : [ "1 colher de sopa de suco de morango", "1 colher de sopa de suco de limão", "seltz" ],
-  "steps" : [ "Em cada copo, coloque uma colher de sopa de suco de morango, uma colher de sopa de suco de limão e complete o copo com seltz.", "Por fim, adicione morangos frescos." ],
+  "ingredients" : [ "1 colher (sopa) de suco de morango por copo", "1 colher (sopa) de suco de limão por copo", "água com gás", "morangos frescos" ],
+  "steps" : [ "Em cada copo, coloque o suco de morango e o suco de limão e complete com água com gás.", "Por fim, junte morangos frescos." ],
   "sourceImage" : "20251023_172126022.jpg",
   "original" : "Ponce di Limone e Fragole\n1 cucchiaio di succo di fragole\n1 cucchiaio di succo di limone\nselz\nMettete in ogni bicchiere un cucchiaio di succo di fragole, un cucchiaio di succo di limone e riempite il bicchiere con selz.\nInfine aggiungetevi delle fragole fresche.",
-  "translated" : "Ponche de Limão e Morango\n1 colher de sopa de suco de morango\n1 colher de sopa de suco de limão\nseltz\nEm cada copo, coloque uma colher de sopa de suco de morango, uma colher de sopa de suco de limão e complete o copo com seltz.\nPor fim, adicione morangos frescos."
+  "translated" : "Refresco de Morango e Limão\n1 colher (sopa) de suco de morango por copo\n1 colher (sopa) de suco de limão por copo\nágua com gás\nmorangos frescos\nEm cada copo, coloque o suco de morango e o suco de limão e complete com água com gás.\nPor fim, junte morangos frescos."
 }
