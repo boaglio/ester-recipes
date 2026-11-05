@@ -1,0 +1,12 @@
+{
+  "title" : "Caprese (Amera)",
+  "category" : "Sobremesas",
+  "originalLanguage" : "it",
+  "yield" : "",
+  "date" : "",
+  "ingredients" : [ "250 gr de amêndoas moídas", "200 gr de chocolate ao leite", "200 gr de manteiga", "200 gr de açúcar de confeiteiro", "5 ovos" ],
+  "steps" : [ "Despejar as amêndoas com chocolate em uma panela - Em outra panela, derreter a manteiga e adicionar o açúcar e os 5 gemas. Unir os dois compostos e adicionar as claras das 5 ovos batidas em neve - Ligar o forno a 180° e esperar que aqueça - Untar uma forma de 26 cm de diâmetro com manteiga, colocar um pedaço de papel manteiga tendo cuidado de cobrir também a borda. Despejar toda a mistura na", "title: Caprese (Amera)", "translated:", "yield:\"\"}<tool_call|>*Self-Correction/Refinement:* The original Json structure provided in the prompt was incomplete/malformed in the `steps` array (it contained a stray `title:` key). I have corrected the structure while ensuring all translations adhere strictly to the rules (e.g.," ],
+  "sourceImage" : "20251027_110606140.jpg",
+  "original" : "Caprese (Amera)\nmandorle macinate 250 gr.\ncioccoletto fondente 200 gr.\nburro 200 gr.\nzucchero a velo 200 gr.\nuova 5\nVersare le mandorle al cioccoletto in una pentola - In un'altro pentola sciogliere il burro e aggiungere lo zucchero e i 5 tuorli. Unire i due composti e aggiungere l'albumine delle 5 uova montato a neve - Accendere il forno a 180° e aspettare che si riscaldi - Ungere una teglia di 26 cm² di Ø con burro, poggiarvi un foglio di carta vetrata avendo cura di ricoprire anche il bordo. Versare tutto l'imposto nella\ntitle: Caprese (Amera)",
+  "translated" : "Caprese (Amera)\n250 gr de amêndoas moídas\n200 gr de chocolate ao leite\n200 gr de manteiga\n200 gr de açúcar de confeiteiro\n5 ovos\nDespejar as amêndoas com chocolate em uma panela - Em outra panela, derreter a manteiga e adicionar o açúcar e os 5 gemas. Unir os dois compostos e adicionar as claras das 5 ovos batidas em neve - Ligar o forno a 180° e esperar que aqueça - Untar uma forma de 26 cm de diâmetro com manteiga, colocar um pedaço de papel manteiga tendo cuidado de cobrir também a borda. Despejar toda a mistura na\ntitle: Caprese (Amera)\ntranslated:\nyield:\"\"}<tool_call|>*Self-Correction/Refinement:* The original Json structure provided in the prompt was incomplete/malformed in the `steps` array (it contained a stray `title:` key). I have corrected the structure while ensuring all translations adhere strictly to the rules (e.g.,"
+}
