@@ -97,6 +97,11 @@ public class RecipePipeline implements ApplicationRunner {
 
         long runStart = System.nanoTime();
 
+        if (properties.reviewed() != null && properties.reviewed().enabled()) {
+            buildFromReviewed(Path.of(properties.reviewed().dir()), pdfPath, runStart);
+            return;
+        }
+
         // Count images already done in previous runs so the progress % reflects the whole
         // batch (done + to-do), not just this run's slice.
         int alreadyDone = (int) countImages(processedDir);
@@ -177,6 +182,33 @@ public class RecipePipeline implements ApplicationRunner {
             checkService.checkAll(allRecipes, book, processedDir, Path.of(properties.outputDir()));
         }
 
+        drawImagesAndWritePdf(book, pdfPath);
+        log.info("Done. {} recipe(s) stored, {} in the book -> JSON in {} and PDF at {}. Whole run took {}.",
+                allRecipes.size(), book.recipes().size(), jsonDir.toAbsolutePath(), pdfPath.toAbsolutePath(),
+                humanDuration(System.nanoTime() - runStart));
+    }
+
+    /**
+     * Makes the book only from the hand-reviewed JSON. No scan is read and the files are not
+     * changed (not even normalized), so the reviewed folder stays exactly as committed.
+     */
+    private void buildFromReviewed(Path reviewedDir, Path pdfPath, long runStart) {
+        List<StoredRecipe> reviewed = jsonStore.readAll(reviewedDir);
+        if (reviewed.isEmpty()) {
+            throw new IllegalStateException("No reviewed recipes in " + reviewedDir.toAbsolutePath()
+                    + ". Copy the recipes there first (see README).");
+        }
+        log.info("Building the book from the {} reviewed recipe(s) in {}; no scan is read.",
+                reviewed.size(), reviewedDir.toAbsolutePath());
+        BookSelection book = BookSelection.select(reviewed);
+        logSelection(book);
+        drawImagesAndWritePdf(book, pdfPath);
+        log.info("Done. {} reviewed recipe(s), {} in the book -> PDF at {}. Whole run took {}.",
+                reviewed.size(), book.recipes().size(), pdfPath.toAbsolutePath(),
+                humanDuration(System.nanoTime() - runStart));
+    }
+
+    private void drawImagesAndWritePdf(BookSelection book, Path pdfPath) {
         // Optional, opt-in second phase: render an anime image per recipe via local ComfyUI.
         Path imageDir = Path.of(properties.jsonDir()).resolveSibling("images");
         if (properties.images() != null && properties.images().dir() != null
@@ -191,9 +223,6 @@ public class RecipePipeline implements ApplicationRunner {
         }
 
         pdfService.write(book.recipes(), pdfPath, properties.pdfTitle(), imageDir);
-        log.info("Done. {} recipe(s) stored, {} in the book -> JSON in {} and PDF at {}. Whole run took {}.",
-                allRecipes.size(), book.recipes().size(), jsonDir.toAbsolutePath(), pdfPath.toAbsolutePath(),
-                humanDuration(System.nanoTime() - runStart));
     }
 
     /** Extract → write JSON → move one image. Self-contained: never lets one image abort the batch. */

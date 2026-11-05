@@ -25,6 +25,7 @@ recipes/pending - images pending process
 recipes/json - json of recipes processed
 recipes/processed - images already processed
 recipes/images - generated images for each recipe
+reviewed - json of recipes reviewed by hand, kept in git; the app never changes it
 
 # PDF generation
 

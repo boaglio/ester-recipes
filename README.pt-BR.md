@@ -101,6 +101,25 @@ sua máquina e fora do git.
 | `recipes/json/<categoria>-<titulo>.json` | Uma receita, como `paes-pizza.json`: título, categoria, idioma original, rendimento, data, ingredientes, modo de preparo, escaneamento de origem e os textos `original` e `translated`. Um nome repetido vira `paes-pizza-2.json`. |
 | `recipes/check/<modelo>/<escaneamento>.txt` | A segunda leitura de um escaneamento, como `gemma4-latest/pagina.jpg.txt`, para que esse modelo não o leia de novo. |
 
+### Receitas revisadas
+
+As receitas em `recipes/json/` são o que os modelos leram, e uma nova leitura de um escaneamento as
+substitui. As receitas corrigidas à mão, comparando com os escaneamentos, ficam em `reviewed/`, que
+está no git. Para montar o livro só com elas, execute:
+
+```bash
+./run-all.sh --ester.reviewed.enabled=true
+```
+
+Isso não lê nenhum escaneamento e não precisa do Ollama. Nenhum arquivo em `reviewed/` é alterado.
+Acrescente `--ester.images.enabled=true` para desenhar as imagens das receitas que ainda não têm uma.
+As imagens ficam em `recipes/images/`, que não está no git (cerca de 140 MB), então faça uma cópia
+dessa pasta à parte.
+
+Depois de ler novos escaneamentos, copie os arquivos novos de `recipes/json/` para `reviewed/` e
+revise-os lá. A imagem de uma receita tem o mesmo nome do arquivo JSON, então mantenha os nomes dos
+arquivos ao editar as receitas.
+
 ### Livro, relatórios e logs
 
 | Caminho | Conteúdo |

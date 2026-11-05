@@ -46,11 +46,52 @@ class RecipePipelineTest {
         processed = root.resolve("processed");
         EsterProperties properties = new EsterProperties(pending.toString(), processed.toString(),
                 root.resolve("no-recipe").toString(), root.resolve("json").toString(), root.resolve("output").toString(),
-                "x.pdf", "Receitas da Ester", 1, 0, null, null, null);
-        pipeline = new RecipePipeline(properties, extraction, new RecipeJsonStore(),
+                "x.pdf", "Receitas da Ester", 1, 0, null, null, null, null);
+        pipeline = pipeline(properties);
+    }
+
+    private RecipePipeline pipeline(EsterProperties properties) {
+        RecipePipeline p = new RecipePipeline(properties, extraction, new RecipeJsonStore(),
                 mock(RecipeCheckService.class), mock(TranslationFixService.class), mock(ImageGenerationService.class), pdf,
                 new SimpleAsyncTaskExecutor());
-        pipeline.retryPause = Duration.ZERO;
+        p.retryPause = Duration.ZERO;
+        return p;
+    }
+
+    @Test
+    void theReviewedBookReadsNoScanAndLeavesTheReviewedFilesAsTheyAre() throws IOException {
+        Files.writeString(pending.resolve("a.jpg"), "image");
+        Path reviewed = Files.createDirectory(root.resolve("reviewed"));
+        // Full caps would be lowered by the normal run's clean-up; the reviewed run must not touch it.
+        String json = """
+                {"title":"BOLO","category":"Bolos e Tortas","originalLanguage":"pt","yield":"","date":"",
+                 "ingredients":["2 ovos"],"steps":["Misture."],"sourceImage":"a.jpg","original":"","translated":""}
+                """;
+        Path file = Files.writeString(reviewed.resolve("bolos-e-tortas-bolo.json"), json);
+        EsterProperties properties = new EsterProperties(pending.toString(), processed.toString(),
+                root.resolve("no-recipe").toString(), root.resolve("json").toString(), root.resolve("output").toString(),
+                "x.pdf", "Receitas da Ester", 1, 0, null, null, null,
+                new EsterProperties.Reviewed(true, reviewed.toString()));
+
+        pipeline(properties).run(null);
+
+        verify(extraction, never()).extract(any());
+        assertTrue(Files.exists(pending.resolve("a.jpg")));
+        assertEquals(json, Files.readString(file));
+        verify(pdf).write(any(), any(), any(), any());
+    }
+
+    @Test
+    void anEmptyReviewedFolderStopsWithAClearMessage() {
+        EsterProperties properties = new EsterProperties(pending.toString(), processed.toString(),
+                root.resolve("no-recipe").toString(), root.resolve("json").toString(), root.resolve("output").toString(),
+                "x.pdf", "Receitas da Ester", 1, 0, null, null, null,
+                new EsterProperties.Reviewed(true, root.resolve("reviewed").toString()));
+
+        IllegalStateException failure = assertThrows(IllegalStateException.class, () -> pipeline(properties).run(null));
+
+        assertTrue(failure.getMessage().contains("No reviewed recipes"), failure.getMessage());
+        verify(pdf, never()).write(any(), any(), any(), any());
     }
 
     @Test

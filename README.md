@@ -99,6 +99,24 @@ machine and out of git.
 | `recipes/json/<category>-<title>.json` | One recipe, such as `paes-pizza.json`: title, category, original language, yield, date, ingredients, steps, source scan, and the `original` and `translated` text. A repeated name becomes `paes-pizza-2.json`. |
 | `recipes/check/<model>/<scan>.txt` | The second reading of a scan, such as `gemma4-latest/page.jpg.txt`, so that scan isn't read again by that model. |
 
+### Reviewed recipes
+
+The recipes in `recipes/json/` are what the models read, and a fresh reading of a scan replaces
+them. Recipes corrected by hand against the scans are kept in `reviewed/`, which is in git. To build
+the book only from them, run:
+
+```bash
+./run-all.sh --ester.reviewed.enabled=true
+```
+
+This reads no scan and needs no Ollama. It doesn't change any file in `reviewed/`. Add
+`--ester.images.enabled=true` to draw pictures for recipes that don't have one yet. The pictures stay
+in `recipes/images/`, which is not in git (about 140 MB), so back that folder up separately.
+
+After new scans are read, copy their new files from `recipes/json/` into `reviewed/` and review
+them there. A recipe's picture has the same name as its JSON file, so keep the file names when you
+edit the recipes.
+
 ### Book, reports and logs
 
 | Path | Contents |

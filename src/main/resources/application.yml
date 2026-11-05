@@ -91,6 +91,12 @@ ester:
     # Extraction transcribes faithfully (original language); this model translates to PT-BR.
     model: "gemma4:latest"
 
+  # Build the book only from the hand-reviewed recipes kept in git, reading no scan and
+  # changing no file in that folder. Enable with --ester.reviewed.enabled=true.
+  reviewed:
+    enabled: false
+    dir: ./reviewed
+
 logging:
   level:
     root: WARN

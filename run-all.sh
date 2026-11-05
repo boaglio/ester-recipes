@@ -7,6 +7,8 @@
 #   check-report.md  the pages to review, if the run got that far
 #
 # Usage:   ./run-all.sh [extra app flags]
+# Book:    ./run-all.sh --ester.reviewed.enabled=true   builds the book only from reviewed/,
+#          reading no scan, so Ollama is not needed
 # Check:   ./run-all.sh --check [extra app flags]   only checks that everything is ready
 # Models:  MAIN_MODEL=... CHECK_MODEL=... ./run-all.sh
 #
@@ -125,6 +127,19 @@ preflight() {
         ok "$JAR"
     fi
 
+    if flag_given --ester.reviewed.enabled=true "$@"; then
+        local reviewed
+        reviewed=$(find reviewed -maxdepth 1 -name '*.json' 2>/dev/null | wc -l)
+        if [ "$reviewed" -gt 0 ]; then
+            ok "$reviewed reviewed recipe(s) in reviewed/; no scan is read"
+        else
+            problem "no reviewed recipes in reviewed/; copy them there first (see README)"
+        fi
+        check_images "$@"
+        finish_preflight
+        return
+    fi
+
     local models model
     if models=$(ollama list 2>/dev/null); then
         ok "Ollama is answering"
@@ -170,11 +185,18 @@ preflight() {
         fi
     fi
 
+    check_images "$@"
+    finish_preflight
+}
+
+check_images() {
     case " $* " in
         *" --ester.images.enabled=true "*) check_comfyui "$@" ;;
         *) warning "images are off, so recipes with no image yet stay without one; add --ester.images.enabled=true" ;;
     esac
+}
 
+finish_preflight() {
     if [ "$problems" -gt 0 ]; then
         echo "Not ready: $problems problem(s) to fix."
         return 1

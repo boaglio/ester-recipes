@@ -44,7 +44,7 @@ class RecipeCheckServiceTest {
 
     private RecipeCheckService service(String checkModel) {
         EsterProperties properties = new EsterProperties("", "", root.resolve("no-recipe").toString(), "", "", "", "", 1, 0,
-                new EsterProperties.Check(true, checkModel, root.resolve("check").toString()), null, null);
+                new EsterProperties.Check(true, checkModel, root.resolve("check").toString()), null, null, null);
         return new RecipeCheckService(extraction, properties, "main");
     }
 

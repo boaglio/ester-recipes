@@ -20,6 +20,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @param check        optional second reading of every scan, to report doubtful pages
  * @param images       optional anime-image generation phase (via a local ComfyUI server)
  * @param translation  optional second routine that fixes non-Portuguese text in the JSON
+ * @param reviewed     optional book built only from the hand-reviewed JSON kept in git
  */
 @ConfigurationProperties(prefix = "ester")
 public record EsterProperties(
@@ -34,8 +35,22 @@ public record EsterProperties(
         int maxImageSide,
         Check check,
         ImageGen images,
-        Translation translation
+        Translation translation,
+        Reviewed reviewed
 ) {
+
+    /**
+     * Settings for building the book from the reviewed recipes ({@code ester.reviewed.*}).
+     *
+     * @param enabled when true, no scan is read and nothing is checked or translated: the book
+     *                is made only from the JSON in {@code dir}, which the app never changes
+     * @param dir     directory with the reviewed recipe JSON, kept in git
+     */
+    public record Reviewed(
+            boolean enabled,
+            String dir
+    ) {
+    }
 
     /**
      * Settings for the optional check phase ({@code ester.check.*}).
