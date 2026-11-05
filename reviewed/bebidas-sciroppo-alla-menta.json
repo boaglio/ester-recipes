@@ -1,12 +1,12 @@
 {
-  "title" : "Xarope de Menta",
+  "title" : "Xarope de Hortelã",
   "category" : "Bebidas",
   "originalLanguage" : "it",
   "yield" : "",
   "date" : "",
-  "ingredients" : [ "70 gr de essência de menta", "um quilo de açúcar", "meio litro de água", "700 gr de álcool a 90° (opcional)" ],
-  "steps" : [ "Pegar na perfumaria 70 gr de essência de menta.", "Ferver um quilo de açúcar com meio litro de água, deixar esfriar e depois adicionar a essência de menta.", "Se desejar alcoólico, adicionar 700 gr de álcool a 90° a tudo; misturar bem e engarrafar.", "Servir gelado." ],
+  "ingredients" : [ "70 g de essência de hortelã", "1 kg de açúcar", "1/2 litro de água", "700 g de álcool a 90° (se quiser alcoólico)" ],
+  "steps" : [ "Ferva o açúcar com a água, deixe esfriar e junte a essência de hortelã.", "Se quiser alcoólico, junte o álcool. Misture bem, engarrafe e sirva gelado." ],
   "sourceImage" : "20251023_172750538.jpg",
   "original" : "Sciroppo alla menta\n70 gr. di essenza di menta\nun chilo di zucchero\nmezzo litro d'acqua\n700 gr. d'alcool a 90° (facoltativo)\nPrendere in drogheria 70 gr. di essenza di menta.\nFar bollire un chilo di zucchero con mezzo litro d'acqua, lasciarlo raffreddare e poi unire l'essenza di menta.\nSe lo si vorrà alcolico unire al tutto 700 gr. d'alcool a 90°; mescolare bene e imbottigliare.\nServire freddo.",
-  "translated" : "Xarope de Menta\n70 gr de essência de menta\num quilo de açúcar\nmeio litro de água\n700 gr de álcool a 90° (opcional)\nPegar na perfumaria 70 gr de essência de menta.\nFerver um quilo de açúcar com meio litro de água, deixar esfriar e depois adicionar a essência de menta.\nSe desejar alcoólico, adicionar 700 gr de álcool a 90° a tudo; misturar bem e engarrafar.\nServir gelado."
+  "translated" : "Xarope de Hortelã\n70 g de essência de hortelã\n1 kg de açúcar\n1/2 litro de água\n700 g de álcool a 90° (se quiser alcoólico)\nFerva o açúcar com a água, deixe esfriar e junte a essência de hortelã.\nSe quiser alcoólico, junte o álcool. Misture bem, engarrafe e sirva gelado."
 }
