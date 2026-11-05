@@ -1,12 +1,12 @@
 {
-  "title" : "Pastelaria de Grão",
+  "title" : "Pastiera de Trigo (receita da Sra. Rita Camerlingo)",
   "category" : "Sobremesas",
   "originalLanguage" : "it",
   "yield" : "",
   "date" : "",
-  "ingredients" : [ "1/2 kg de ricota", "400 gr de açúcar", "8 ovos (para fazer bignèlis de maçã)", "1/4 de grão - cedro -", "Baunilha em pó e água de flor" ],
-  "steps" : [ "Misturar a ricota com o açúcar", "e cozinhar (1 ou 2 flores com a baunilha em pó e água de flor)" ],
+  "ingredients" : [ "1/2 kg de ricota", "400 g de açúcar", "8 ovos (as claras batidas em neve)", "250 g de trigo cozido", "cidra cristalizada", "baunilha, canela e água de flor de laranjeira" ],
+  "steps" : [ "Misture a ricota com o açúcar e deixe macerar por 2 dias, com a baunilha, a canela e a água de flor de laranjeira." ],
   "sourceImage" : "20251027_104141053.jpg",
-  "original" : "Pastière di grano\n- 1/2 kg. ricotta\n- 400 grs. zucchero\n- uova 8 (fare i bignèli a mele)\n- grano 1/4 - cedro -\nVainiglie comulle e acqua di fiori\nmettere le ricotta con lo zucchero\ne succhere (1 2 fiori insieme alle vainiglie comulle e acqua di fiori)",
-  "translated" : "Pastelaria de Grão\n1/2 kg de ricota\n400 gr de açúcar\n8 ovos (para fazer bignèlis de maçã)\n1/4 de grão - cedro -\nBaunilha em pó e água de flor\nMisturar a ricota com o açúcar\ne cozinhar (1 ou 2 flores com a baunilha em pó e água de flor)"
+  "original" : "Pastiera di grano (Ricetta Sra. Rita Camerlingo)\n1/2 kg. ricotta\n400 grs. zucchero\nuova 8 (fare i bianchi a neve)\ngrano 1/4\ncedro\nvaniglia, cannella e acqua di fiori\nMettere la ricotta con lo zucchero a macerare p/ 2 giorni insieme alla vaniglia, cannella e acqua di fiori.",
+  "translated" : "Pastiera de Trigo (receita da Sra. Rita Camerlingo)\n1/2 kg de ricota\n400 g de açúcar\n8 ovos (as claras batidas em neve)\n250 g de trigo cozido\ncidra cristalizada\nbaunilha, canela e água de flor de laranjeira\nMisture a ricota com o açúcar e deixe macerar por 2 dias, com a baunilha, a canela e a água de flor de laranjeira."
 }

@@ -1,12 +1,12 @@
 {
   "title" : "Patê de Berinjela",
-  "category" : "Acompanhamentos",
+  "category" : "Entradas e Petiscos",
   "originalLanguage" : "it",
   "yield" : "",
   "date" : "",
-  "ingredients" : [ "3 berinjelas grandes", "1 pimentão vermelho", "olivas verdes", "salsinha", "alho", "sal" ],
-  "steps" : [ "Passar as berinjelas na máquina de carne e adicionar o pimentão. Deixar em banho de vinagre por duas horas.", "Retirar tudo, pressionar bem, adicionar as olivas em pedaços, o alho e a salsinha.", "Deixar na geladeira e cobrir com óleo." ],
+  "ingredients" : [ "3 berinjelas grandes", "1 pimentão vermelho", "azeitonas verdes", "salsinha", "alho", "sal", "vinagre", "azeite" ],
+  "steps" : [ "Moa as berinjelas na máquina de moer carne e junte o pimentão. Deixe de molho no vinagre por duas horas.", "Tire tudo, esprema bem e junte as azeitonas em pedacinhos, o alho e a salsinha.", "Guarde na geladeira, coberto com azeite." ],
   "sourceImage" : "20251024_134345845.jpg",
   "original" : "PATÉ DI MELENZANE\n3 melanzane grandi\n1 peperone rosso\nulive verdi\nperzemolo\nalho\nsale\nMacinare le melanzane nella macchina per la carne e aggiungere il peperone. Lasciare in bagno d'aceto per due ore.\nTirar tutto, premere bene, aggiungere le ulive a pezzettini, l'aglio il perzemolo.\nLasciare nel frigidere e coprire con olio.",
-  "translated" : "Patê de Berinjela\n3 berinjelas grandes\n1 pimentão vermelho\nolivas verdes\nsalsinha\nalho\nsal\nPassar as berinjelas na máquina de carne e adicionar o pimentão. Deixar em banho de vinagre por duas horas.\nRetirar tudo, pressionar bem, adicionar as olivas em pedaços, o alho e a salsinha.\nDeixar na geladeira e cobrir com óleo."
+  "translated" : "Patê de Berinjela\n3 berinjelas grandes\n1 pimentão vermelho\nazeitonas verdes\nsalsinha\nalho\nsal\nvinagre\nazeite\nMoa as berinjelas na máquina de moer carne e junte o pimentão. Deixe de molho no vinagre por duas horas.\nTire tudo, esprema bem e junte as azeitonas em pedacinhos, o alho e a salsinha.\nGuarde na geladeira, coberto com azeite."
 }

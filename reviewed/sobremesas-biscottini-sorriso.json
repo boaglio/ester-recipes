@@ -1,12 +1,12 @@
 {
-  "title" : "Biscoitos Sorriso",
+  "title" : "Biscoitinhos Sorriso",
   "category" : "Sobremesas",
   "originalLanguage" : "it",
   "yield" : "",
   "date" : "",
-  "ingredients" : [ "1/2 recipiente de óleo", "1 e meio de açúcar", "50 gramas de margherita", "3 ovos inteiros", "1 pacote de açúcar de baunilha ou raspas de limão" ],
-  "steps" : [ "Assar o que pegar", "Misturar e colocar no forno e cortar no forno" ],
+  "ingredients" : [ "1/2 copo de óleo", "1 1/2 copo de açúcar", "50 g de margarina", "3 ovos inteiros", "1 envelope de açúcar de baunilha ou casca de limão", "farinha (a que a massa pedir)" ],
+  "steps" : [ "Junte a farinha que a massa pedir.", "Amasse tudo, coloque em forminhas e corte; asse no forno." ],
   "sourceImage" : "20251027_111522972.jpg",
-  "original" : "Biscottini Sorriso\n1/2 bidone di olio\n1 e mezzo di zucchero\n50 grammi di margherita\n3 uova intere\n1 bustina di zucchero vanigliato o scorze di limone\nForna quello che prende\nImpastare e mettere in forno e tagliare nel forno",
-  "translated" : "Biscoitos Sorriso\n1/2 recipiente de óleo\n1 e meio de açúcar\n50 gramas de margherita\n3 ovos inteiros\n1 pacote de açúcar de baunilha ou raspas de limão\nAssar o que pegar\nMisturar e colocar no forno e cortar no forno"
+  "original" : "Biscottini Sorriso\n1/2 bicchiere di olio\n1 e mezzo di zucchero\n50 grammi di margarina\n3 uova intere\n1 bustina di zucchero vanigliato o scorza di limone\nFarina quello che prende.\nImpastare il tutto e mettere in formine, tagliate nel forno.",
+  "translated" : "Biscoitinhos Sorriso\n1/2 copo de óleo\n1 1/2 copo de açúcar\n50 g de margarina\n3 ovos inteiros\n1 envelope de açúcar de baunilha ou casca de limão\nfarinha (a que a massa pedir)\nJunte a farinha que a massa pedir.\nAmasse tudo, coloque em forminhas e corte; asse no forno."
 }
