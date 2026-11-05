@@ -1,12 +1,12 @@
 {
-  "title" : "Tagliatelle à Ricota",
+  "title" : "Talharim com Ricota",
   "category" : "Massas",
   "originalLanguage" : "it",
-  "yield" : "x 6",
+  "yield" : "6 pessoas",
   "date" : "",
-  "ingredients" : [ "ricota", "tagliatelle", "manteiga", "pimenta", "sal" ],
-  "steps" : [ "Amasse 400 gr. de ricota amassada em um prato de servir.", "Colocar na panela 600 gr. de tagliatelle.", "Amassar até virar um creme.", "Despejar os tagliatelle sobre o creme, finalizar de temperar com 50 gr. de manteiga, pimenta e sal." ],
+  "ingredients" : [ "400 g de ricota", "600 g de talharim", "50 g de manteiga", "pimenta e sal" ],
+  "steps" : [ "Coloque a ricota em pedaços numa travessa sobre a panela do talharim e amasse até virar um creme.", "Despeje o talharim cozido sobre o creme e termine de temperar com a manteiga, pimenta e sal." ],
   "sourceImage" : "20251023_174518238.jpg",
   "original" : "TAGLIATELLE ALLA RICOTTA x 6\nricotta\ntagliatelle\nburro\npepe\nsale\nSpezzate 400 gr.ricotta m in un piatto di portata.\nMettere sulla pentola delle tagliatelle 600 gr.\nSchiacciare finché diventi una crema.\nVersare le tagliatelle sulla crema, finire di condire o/ 50 gr. di burro, pepe e sale.",
-  "translated" : "Tagliatelle à Ricota\nricota\ntagliatelle\nmanteiga\npimenta\nsal\nAmasse 400 gr. de ricota amassada em um prato de servir.\nColocar na panela 600 gr. de tagliatelle.\nAmassar até virar um creme.\nDespejar os tagliatelle sobre o creme, finalizar de temperar com 50 gr. de manteiga, pimenta e sal."
+  "translated" : "Talharim com Ricota\n400 g de ricota\n600 g de talharim\n50 g de manteiga\npimenta e sal\nColoque a ricota em pedaços numa travessa sobre a panela do talharim e amasse até virar um creme.\nDespeje o talharim cozido sobre o creme e termine de temperar com a manteiga, pimenta e sal."
 }
