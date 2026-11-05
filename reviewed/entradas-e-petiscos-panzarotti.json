@@ -1,12 +1,12 @@
 {
-  "title" : "Panzarotti",
+  "title" : "Panzarotti (receita de Adriana Romito)",
   "category" : "Entradas e Petiscos",
   "originalLanguage" : "it",
   "yield" : "",
-  "date" : "23-4-99",
-  "ingredients" : [ "3 ovos", "pimenta", "queijo", "pão", "muzzarela" ],
-  "steps" : [ "Coloque os ovos", "Coloque o queijo sobre o pão", "sal, pimenta", "Misture tudo e faça", "os panzarotti colocando no", "meio pedaço de", "muzzarela", "Passe na clara", "do ovo primeiro", "empanar e fritar" ],
+  "date" : "Moliterno, 23-4-99",
+  "ingredients" : [ "batatas cozidas", "queijo ralado", "sal", "pimenta", "3 ovos", "salsinha", "muçarela em pedacinhos", "farinha de rosca" ],
+  "steps" : [ "Misture tudo e faça os panzarotti, colocando no meio um pedacinho de muçarela.", "Passe na clara do ovo antes de empanar e frite." ],
   "sourceImage" : "20251027_111241240.jpg",
-  "original" : "Panzarotti\n3 uova\npepe\nformaggio\npane\nmozzarella\nMettete lese\nformaggio sugli uggieto\nsale pepe\nUnisciare tutto e fare\ni panzarotti mettendo nel\nmezzo pezzetto di\nmozzarella\nPosseve nell'albuve\ndell'ovo frime di\nimpanare e friggere",
-  "translated" : "Panzarotti\n3 ovos\npimenta\nqueijo\npão\nmuzzarela\nColoque os ovos\nColoque o queijo sobre o pão\nsal, pimenta\nMisture tudo e faça\nos panzarotti colocando no\nmeio pedaço de\nmuzzarela\nPasse na clara\ndo ovo primeiro\nempanar e fritar"
+  "original" : "Panzarotti\npatate lesse\nformaggio grattugiato\nsale\npepe\n3 uova\nprezzemolo\nMischiare tutto e fare i panzarotti mettendo nel mezzo 1 pezzetto di mozzarella.\nPassare nell'albume dell'uovo prima di impanare e friggere.\nRicetta di Adriana Romito",
+  "translated" : "Panzarotti (receita de Adriana Romito)\nbatatas cozidas\nqueijo ralado\nsal\npimenta\n3 ovos\nsalsinha\nmuçarela em pedacinhos\nfarinha de rosca\nMisture tudo e faça os panzarotti, colocando no meio um pedacinho de muçarela.\nPasse na clara do ovo antes de empanar e frite."
 }

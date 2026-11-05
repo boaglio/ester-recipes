@@ -1,12 +1,12 @@
 {
-  "title" : "Suco de fruto",
+  "title" : "Suco de Frutas",
   "category" : "Bebidas",
   "originalLanguage" : "pt",
   "yield" : "",
   "date" : "",
-  "ingredients" : [ "Banana", "Melce", "Mentos", "suco de laranja", "azucar", "água" ],
-  "steps" : [ "Botar Tudo no líquif coida" ],
+  "ingredients" : [ "banana", "maçã", "mamão", "suco de laranja", "açúcar", "água" ],
+  "steps" : [ "Bata tudo no liquidificador." ],
   "sourceImage" : "20251027_103929237.jpg",
-  "original" : "Suco de fruto\nBanana\nMelce\nMentos\nsuco de laranja\nazucar\nágua\nBotar Tudo no líquif coida",
-  "translated" : "Suco de fruto\nBanana\nMelce\nMentos\nsuco de laranja\nazucar\nágua\nBotar Tudo no líquif coida"
+  "original" : "Suco de Frutas\nbanana\nmaçã\nmamão\nsuco de laranja\naçúcar\nágua\nBata tudo no liquidificador.",
+  "translated" : "Suco de Frutas\nbanana\nmaçã\nmamão\nsuco de laranja\naçúcar\nágua\nBata tudo no liquidificador."
 }

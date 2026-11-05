@@ -1,12 +1,12 @@
 {
-  "title" : "Pizze Fritte",
+  "title" : "Pizzas Fritas",
   "category" : "Pães",
   "originalLanguage" : "pt",
   "yield" : "20 pizzas",
   "date" : "9.12.2007",
-  "ingredients" : [ "1 kg de farinha", "2 fermentos Fleischmann", "300 g de mozzarella", "300 g de presunto cozido" ],
-  "steps" : [ "Dá 20 pizzas!" ],
+  "ingredients" : [ "1 kg de farinha", "2 tabletes de fermento Fleischmann", "300 g de muçarela", "300 g de presunto cozido" ],
+  "steps" : [ ],
   "sourceImage" : "20251027_102728575.jpg",
-  "original" : "Pizze Fritte\n1 kg de farinha\n2 fermentos Fleischmann\n300 g de mozzarella\n300 g de presunto cozido\nDá 20 pizzas!",
-  "translated" : "Pizze Fritte\n1 kg de farinha\n2 fermentos Fleischmann\n300 g de mozzarella\n300 g de presunto cozido\nDá 20 pizzas!"
+  "original" : "Pizzas Fritas\n1 kg de farinha\n2 tabletes de fermento Fleischmann\n300 g de muçarela\n300 g de presunto cozido",
+  "translated" : "Pizzas Fritas\n1 kg de farinha\n2 tabletes de fermento Fleischmann\n300 g de muçarela\n300 g de presunto cozido"
 }

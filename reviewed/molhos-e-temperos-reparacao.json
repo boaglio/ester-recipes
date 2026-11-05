@@ -1,12 +1,12 @@
 {
-  "title" : "Reparação",
-  "category" : "Molhos e Temperos",
+  "title" : "Requeijão",
+  "category" : "Entradas e Petiscos",
   "originalLanguage" : "pt",
   "yield" : "",
   "date" : "",
-  "ingredients" : [ "1 nicote (1/2 kg.)", "200g de manteiga", "1 bichinho americano", "sal" ],
-  "steps" : [ "Bater tudo no liquidificador" ],
+  "ingredients" : [ "1 ricota (1/2 kg)", "200 g de manteiga", "1 copo (americano) de leite fervente", "sal" ],
+  "steps" : [ "Bata tudo no liquidificador." ],
   "sourceImage" : "20251024_160400619.jpg",
-  "original" : "Reparação\n1 nicote (1/2 kg.)\n200g burro\n1 bichinho americano\nsale\nBatir tudo no frutetor",
-  "translated" : "Reparação\n1 nicote (1/2 kg.)\n200g de manteiga\n1 bichinho americano\nsal\nBater tudo no liquidificador"
+  "original" : "Requeijão\n1 ricota (1/2 kg)\n200 g de manteiga\n1 copo (americano) de leite fervente\nsal\nBata tudo no liquidificador.",
+  "translated" : "Requeijão\n1 ricota (1/2 kg)\n200 g de manteiga\n1 copo (americano) de leite fervente\nsal\nBata tudo no liquidificador."
 }

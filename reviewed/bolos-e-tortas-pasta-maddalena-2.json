@@ -1,12 +1,12 @@
 {
-  "title" : "Massa Maddalena",
+  "title" : "Massa Madalena",
   "category" : "Bolos e Tortas",
   "originalLanguage" : "it",
   "yield" : "",
   "date" : "",
-  "ingredients" : [ "100 g de manteiga", "100 g de farinha", "100 g de açúcar", "2 ovos", "raspas de limão", "sal", "4 claras", "2 colheres de sopa de açúcar", "e suco de limão." ],
-  "steps" : [ "Bater as gemas com o açúcar por 20 minutos", "Adicionar a farinha aos poucos até ser absorvida", "Incorporar a manteiga morna", "Raspar o limão", "Bater as claras em neve", "Formar uma massa", "Assar em forma untada com manteiga" ],
+  "ingredients" : [ "100 g de manteiga", "100 g de farinha", "100 g de açúcar mais 2 colheres (sopa)", "2 ovos", "casca de limão ralada", "sal", "4 claras", "suco de limão" ],
+  "steps" : [ "Bata as gemas com o açúcar por 20 minutos.", "Junte a farinha aos poucos, a manteiga morna, o limão ralado, o sal e as claras em neve.", "Leve ao forno numa fôrma untada com manteiga, em fogo baixo." ],
   "sourceImage" : "20251027_131648659.jpg",
-  "original" : "PASTA MADDALENA\n\n100 grs.\ndi burro\n100 grs., di farina\n100 grs., di zucchero\n2 uova\nbuccia\ngrattugiata di limone\nsale\n4 bianchi\n2 cucchiali di zucchero\ne del succo di limone.\nLavorare i rossi con lo zucchero per 20 minuti\nAggiungere la farina man mano che è assorbita\nInserire il burro tiepido\nGrattere il limone\nSbattere gli albumi\nFormare una pasta\nInfornare su teglia imburrata",
-  "translated" : "Massa Maddalena\n100 g de manteiga\n100 g de farinha\n100 g de açúcar\n2 ovos\nraspas de limão\nsal\n4 claras\n2 colheres de sopa de açúcar\ne suco de limão.\nBater as gemas com o açúcar por 20 minutos\nAdicionar a farinha aos poucos até ser absorvida\nIncorporar a manteiga morna\nRaspar o limão\nBater as claras em neve\nFormar uma massa\nAssar em forma untada com manteiga"
+  "original" : "Pasta Maddalena\n100 grs. di burro\n100 grs. di farina\n100 grs. di zucchero\n2 uova\nbuccia grattugiata di limone\nsale\n4 bianchi\n2 cucchiai di zucchero\ndel succo di limone\nSi lavorano i rossi con lo zucchero per 20 minuti, si aggiunge la farina poco per volta, il burro tiepido, poi il limone grattugiato, il sale, i bianchi a neve.\nSi inforna in una teglia imburrata, si cucina a fuoco lento.",
+  "translated" : "Massa Madalena\n100 g de manteiga\n100 g de farinha\n100 g de açúcar mais 2 colheres (sopa)\n2 ovos\ncasca de limão ralada\nsal\n4 claras\nsuco de limão\nBata as gemas com o açúcar por 20 minutos.\nJunte a farinha aos poucos, a manteiga morna, o limão ralado, o sal e as claras em neve.\nLeve ao forno numa fôrma untada com manteiga, em fogo baixo."
 }

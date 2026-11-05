@@ -1,12 +1,12 @@
 {
-  "title" : "Cozido em ovo",
-  "category" : "Molhos e Temperos",
+  "title" : "Cozido Crioulo",
+  "category" : "Carnes",
   "originalLanguage" : "pt",
   "yield" : "",
   "date" : "",
-  "ingredients" : [ "cebola, alho, pimenta vermelha", "alho verde, tomate refolho", "corte, batata doce", "salsinha, manjericão", "quinto a fogão" ],
-  "steps" : [ "Fazer um bisco do molho com manjericão", "Por tudo, se for de pressão" ],
+  "ingredients" : [ "cebola, alho, louro, pimenta vermelha, cheiro-verde", "tomate, repolho, couve", "batata-doce, batata, cenoura, mandioca, quiabo", "carnes: paio, carne verde, linguiça", "farinha de mandioca" ],
+  "steps" : [ "Ponha tudo na panela de pressão.", "Faça um pirão com o caldo e a farinha de mandioca." ],
   "sourceImage" : "20251024_160400619.jpg",
-  "original" : "Cozido em ovo\ncebola, alho, pimenta vermelha\nalho verde, tomate refolho\ncorte, batata doce\nsalsinha, manjericão\nquinto a fogão\nFazer um bisco do molho com manjericão\nPor tudo, se for de pressão",
-  "translated" : "Cozido em ovo\ncebola, alho, pimenta vermelha\nalho verde, tomate refolho\ncorte, batata doce\nsalsinha, manjericão\nquinto a fogão\nFazer um bisco do molho com manjericão\nPor tudo, se for de pressão"
+  "original" : "Cozido Crioulo\ncebola, alho, louro, pimenta vermelha, cheiro-verde\ntomate, repolho, couve\nbatata-doce, batata, cenoura, mandioca, quiabo\ncarnes: paio, carne verde, linguiça\nfarinha de mandioca\nPonha tudo na panela de pressão.\nFaça um pirão com o caldo e a farinha de mandioca.",
+  "translated" : "Cozido Crioulo\ncebola, alho, louro, pimenta vermelha, cheiro-verde\ntomate, repolho, couve\nbatata-doce, batata, cenoura, mandioca, quiabo\ncarnes: paio, carne verde, linguiça\nfarinha de mandioca\nPonha tudo na panela de pressão.\nFaça um pirão com o caldo e a farinha de mandioca."
 }

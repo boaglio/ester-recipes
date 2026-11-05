@@ -1,12 +1,12 @@
 {
-  "title" : "Torta de Mel de Mel",
+  "title" : "Torta Maria",
   "category" : "Bolos e Tortas",
-  "originalLanguage" : "pt",
+  "originalLanguage" : "it",
   "yield" : "",
   "date" : "",
-  "ingredients" : [ "125 g de chocolate", "1 pitada de baunilha", "150 g de açúcar", "2-3 ovos", "1 colher de chá de essência de limão", "2 colheres de chá (tli) Royal", "4 g de fermento", "2 formas de farinha", "1 noz-moscada" ],
-  "steps" : [ "Colocar o doce em uma forma ou fatia ou mel ou fatia", "Quando pronto, polvilhar com açúcar e canela", "Tempo de cozimento 125 minutos" ],
+  "ingredients" : [ "125 g de manteiga", "1 pitada de sal", "150 g de açúcar", "2 a 3 ovos", "1 colher (chá) de essência de limão", "2 colheres (chá) de fermento Royal", "4 colheres (chá) de leite", "2 xícaras de farinha", "1 xícara de maisena", "bananas ou maçãs em fatias", "açúcar e canela para polvilhar" ],
+  "steps" : [ "Coloque sobre o bolo bananas ou maçãs em fatias.", "Quando estiver pronto, polvilhe com açúcar e canela.", "Tempo de forno: 45 minutos." ],
   "sourceImage" : "20251027_151139153.jpg",
-  "original" : "Torta Miele Miele\n125 gr di cioccolato\n1 pizzico di vaniglia\n150 gr zucchero\n2-3 uova\n1 cucchiaino piccolo essenza Limone\n2 cucchiaini (tli) Royal\n4 gr di lievito\n2 teglie farine\n1 nucifera\nMettere sul dolce benone o fetta o miele o fetta\nQuanto è pronto polverizzare con zucchero e cannella\nTempo di cottura 125 minuti",
-  "translated" : "Torta de Mel de Mel\n125 g de chocolate\n1 pitada de baunilha\n150 g de açúcar\n2-3 ovos\n1 colher de chá de essência de limão\n2 colheres de chá (tli) Royal\n4 g de fermento\n2 formas de farinha\n1 noz-moscada\nColocar o doce em uma forma ou fatia ou mel ou fatia\nQuando pronto, polvilhar com açúcar e canela\nTempo de cozimento 125 minutos"
+  "original" : "Torta Maria\n125 grammi burro\n1 pizzico di sale\n150 zucchero\n2-3 uova\n1 cucchiaino piccolo essenza limone\n2 cucchiai (thè) Royal\n4 cucchiai latte\n2 tazze farina\n1 tazza maizena\nMettere sul dolce banane a fette o mele a fette.\nQuando è pronto polverizzare con zucchero e cannella.\nTempo di cottura: 45 minuti.",
+  "translated" : "Torta Maria\n125 g de manteiga\n1 pitada de sal\n150 g de açúcar\n2 a 3 ovos\n1 colher (chá) de essência de limão\n2 colheres (chá) de fermento Royal\n4 colheres (chá) de leite\n2 xícaras de farinha\n1 xícara de maisena\nbananas ou maçãs em fatias\naçúcar e canela para polvilhar\nColoque sobre o bolo bananas ou maçãs em fatias.\nQuando estiver pronto, polvilhe com açúcar e canela.\nTempo de forno: 45 minutos."
 }
